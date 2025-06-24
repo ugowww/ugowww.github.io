@@ -1,4 +1,3 @@
-
 let userPosition = null;
 let watchId = null;
 let placedEntity = null;
