@@ -1,104 +1,154 @@
-// === Supabase Config ===
-const SUPABASE_URL = 'https://ksgrrlzmervlrpdjtprg.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzZ3JybHptZXJ2bHJwZGp0cHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3NTIwNzUsImV4cCI6MjA2NjMyODA3NX0._d8aSPBnQzNA08zuRzE4GAHLpu-wm7BcLixnqK9RgZg'; 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// === Global State ===
-let currentPlantCode = null;
+let userPosition = null;
+let watchId = null;
 let placedEntity = null;
+let currentPlantCode = null;
+let storedPlants = []; // JSON local [{ id, latitude, longitude }]
 
-// === Utility: Get current GPS coordinates ===
-async function getCurrentPosition() {
-  if (!('geolocation' in navigator)) {
-    throw new Error("La géolocalisation n'est pas supportée.");
-  }
-
+function getCurrentPositionOnce() {
   return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(
-      pos => resolve(pos.coords),
-      err => reject(err),
-      { enableHighAccuracy: true }
-    );
+    if (!navigator.geolocation) {
+      return reject("Géolocalisation non supportée.");
+    }
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: true
+    });
   });
 }
 
-// === Load a plant model in front of the user ===
+function startTrackingPosition() {
+  if (!navigator.geolocation) {
+    alert("Géolocalisation non supportée.");
+    return;
+  }
+
+  watchId = navigator.geolocation.watchPosition(
+    pos => {
+      userPosition = {
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude
+      };
+      updatePositionDisplay();
+      renderPlants(); // Réactualise les plantes visibles
+    },
+    err => {
+      console.error("Erreur GPS :", err);
+    },
+    {
+      enableHighAccuracy: true,
+      maximumAge: 1000,
+      timeout: 5000
+    }
+  );
+}
+
+function stopTrackingPosition() {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+}
+
+function updatePositionDisplay() {
+  const el = document.getElementById('positionDisplay');
+  if (!userPosition) {
+    el.innerText = "GPS: en attente...";
+  } else {
+    el.innerText = `GPS:\nLat: ${userPosition.latitude.toFixed(5)}\nLon: ${userPosition.longitude.toFixed(5)}`;
+  }
+}
+
 function loadPlantModel(code) {
   const modelPath = `models/${code}/${code}.glb`;
   const scene = document.querySelector('a-scene');
 
-  // Remove old one
   if (placedEntity) {
     placedEntity.remove();
   }
 
-  // Create new plant entity
   placedEntity = document.createElement('a-entity');
   placedEntity.setAttribute('glb-model', modelPath);
   placedEntity.setAttribute('scale', '1 1 1');
   placedEntity.setAttribute('position', '0 0 -3');
   placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
   placedEntity.setAttribute('id', 'placed-plant');
-  scene.appendChild(placedEntity);
 
+  scene.appendChild(placedEntity);
   currentPlantCode = code;
 }
 
-// === Save plant's current GPS position to Supabase ===
-async function savePlantPosition(code, lat, lon) {
-  const { error } = await supabase.from('Plants').insert({
-    id: code,
-    latitude: lat,
-    longitude: lon
-  });
-
-  if (error) {
-    throw error;
-  }
+function setPositionPlant(lat, lon) {
+  if (!placedEntity) return;
+  placedEntity.setAttribute('gps-entity-place', { latitude: lat, longitude: lon });
+  placedEntity.removeAttribute('position');
 }
 
-// === Place and save current plant ===
-async function confirmPlacement() {
-  if (!currentPlantCode || !placedEntity) {
-    alert("Chargez une plante d'abord.");
+function confirmPosition() {
+  if (!userPosition || !currentPlantCode) {
+    alert("Chargez une plante et attendez la position.");
     return;
   }
 
-  try {
-    const coords = await getCurrentPosition();
-    const { latitude, longitude } = coords;
+  const newPlant = {
+    id: currentPlantCode,
+    latitude: userPosition.latitude,
+    longitude: userPosition.longitude
+  };
 
-    placedEntity.setAttribute('gps-entity-place', { latitude, longitude });
-    placedEntity.removeAttribute('position');
+  setPositionPlant(userPosition.latitude, userPosition.longitude);
+  storedPlants.push(newPlant);
 
-    await savePlantPosition(currentPlantCode, latitude, longitude);
-    alert("Plante enregistrée avec succès !");
-  } catch (err) {
-    alert("Erreur : " + err.message);
+  alert("Plante enregistrée localement.");
+}
+
+function destroy(entity) {
+  if (entity && entity.parentNode) {
+    entity.parentNode.removeChild(entity);
   }
 }
 
-// === Load previously saved plants from Supabase ===
-async function loadPlacedPlants() {
-  try {
-    const { data, error } = await supabase.from('Plants').select('*');
-    if (error) throw error;
-
-    const scene = document.querySelector('a-scene');
-    data.forEach(({ id, latitude, longitude }) => {
-      const plant = document.createElement('a-entity');
-      plant.setAttribute('gps-entity-place', { latitude, longitude });
-      plant.setAttribute('glb-model', `models/${id}/${id}.glb`);
-      plant.setAttribute('scale', '1 1 1');
-      plant.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
-      scene.appendChild(plant);
-    });
-  } catch (err) {
-    console.error("Erreur chargement plantes : ", err);
-  }
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // m
+  const toRad = x => x * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// === Event Bindings ===
+function renderPlants() {
+  if (!userPosition) return;
+
+  const scene = document.querySelector('a-scene');
+
+  // Clean previous renders (except current placedEntity)
+  document.querySelectorAll('.rendered-plant').forEach(e => e.remove());
+
+  storedPlants.forEach(plant => {
+    const dist = haversine(
+      userPosition.latitude,
+      userPosition.longitude,
+      plant.latitude,
+      plant.longitude
+    );
+
+    if (dist < 200) {
+      const entity = document.createElement('a-entity');
+      entity.setAttribute('gps-entity-place', {
+        latitude: plant.latitude,
+        longitude: plant.longitude
+      });
+      entity.setAttribute('glb-model', `models/${plant.id}/${plant.id}.glb`);
+      entity.setAttribute('scale', '1 1 1');
+      entity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
+      entity.classList.add('rendered-plant');
+      scene.appendChild(entity);
+    }
+  });
+}
+
+// === Initialisation ===
 window.onload = () => {
   document.getElementById('loadPlantBtn').onclick = () => {
     const code = document.getElementById('plantCodeInput').value.trim().toUpperCase();
@@ -109,7 +159,7 @@ window.onload = () => {
     }
   };
 
-  document.getElementById('confirmPlacementBtn').onclick = confirmPlacement;
+  document.getElementById('confirmPlacementBtn').onclick = confirmPosition;
 
-  loadPlacedPlants();
+  startTrackingPosition();
 };

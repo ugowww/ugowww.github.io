@@ -1,5 +1,12 @@
 {
   "dependencies": {
-    "@supabase/supabase-js": "^2.50.0"
+    "@supabase/supabase-js": "^2.50.0",
+    "ar.js": "^2.0.8",
+    "express": "^5.1.0",
+    "fs": "^0.0.1-security",
+    "https": "^1.0.0",
+    "locar": "^0.0.12",
+    "path": "^0.12.7",
+    "three": "^0.177.0"
   }
 }
