@@ -1,10 +1,14 @@
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+// Remplace avec tes propres clés Supabase
+const supabaseUrl = "https://ksgrrlzmervlrpdjtprg.supabase.co";
+const supabaseKey = process.env.SUPABASE_KEY
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 let currentPlantCode = null;
 let placedEntity = null;
 
-function showPositionAlert(lat, lon) {
-  alert(`Position GPS actuelle :\nLatitude : ${lat}\nLongitude : ${lon}`);
-}
-
+// Obtenir la position actuelle
 function getCurrentPosition() {
   return new Promise((resolve, reject) => {
     if ('geolocation' in navigator) {
@@ -14,120 +18,102 @@ function getCurrentPosition() {
         { enableHighAccuracy: true }
       );
     } else {
-      reject(new Error("La géolocalisation n'est pas supportée par ce navigateur."));
+      reject(new Error("Géolocalisation non disponible."));
     }
   });
 }
 
-// Charger la plante et l'afficher devant la caméra
-async function loadPlant(code) {
-  try {
-    const res = await fetch(`/api/get-plant/${code}`);
-    if (!res.ok) throw new Error('Plante non trouvée');
-    const data = await res.json();
-
-    currentPlantCode = code.toUpperCase();
-
-    // Supprime l'entité précédente
-    if (placedEntity) {
-      placedEntity.remove();
-      placedEntity = null;
-    }
-
-    const scene = document.querySelector('a-scene');
-    placedEntity = document.createElement('a-entity');
-
-    // Correction ici : gltf-model (et non glb-model)
-    placedEntity.setAttribute('gltf-model', data.modelUrl);
-    placedEntity.setAttribute('scale', '1 1 1');
-    placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
-    placedEntity.setAttribute('id', 'placed-plant');
-
-    // ✅ Ajoute position temporaire devant la caméra
-    placedEntity.setAttribute('position', '0 0 -3');
-
-    scene.appendChild(placedEntity);
-
-  } catch (err) {
-    alert(err.message);
-  }
+// Affiche une boîte de dialogue avec la position GPS
+function showPositionAlert(lat, lon) {
+  alert(`Position GPS obtenue :\nLatitude: ${lat}\nLongitude: ${lon}`);
 }
 
+// Charger un modèle de plante
+async function loadPlant(code) {
+  currentPlantCode = code.toUpperCase();
+
+  // Nettoyer l'entité précédente
+  if (placedEntity) {
+    placedEntity.remove();
+    placedEntity = null;
+  }
+
+  const scene = document.querySelector("a-scene");
+  placedEntity = document.createElement("a-entity");
+
+  placedEntity.setAttribute("glb-model", `models/${code}/${code}.glb`);
+  placedEntity.setAttribute("scale", "1 1 1");
+  placedEntity.setAttribute("position", "0 0 -3"); // Affiche devant la caméra
+  placedEntity.setAttribute("gesture-handler", "minScale: 0.5; maxScale: 5");
+  placedEntity.setAttribute("id", "placed-plant");
+
+  scene.appendChild(placedEntity);
+}
+
+// Confirmer le placement et sauvegarder dans Supabase
 async function confirmPlacement() {
   if (!currentPlantCode || !placedEntity) {
-    alert("Aucune plante chargée.");
+    alert("Chargez une plante d'abord.");
     return;
   }
 
   try {
     const coords = await getCurrentPosition();
-    //showPositionAlert(coords.latitude, coords.longitude);
+    const { latitude, longitude } = coords;
 
-    // Enlève la position relative
-    placedEntity.removeAttribute('position');
+    showPositionAlert(latitude, longitude);
 
-    // Ajoute la position GPS réelle
-    placedEntity.setAttribute('gps-entity-place', {
-      latitude: coords.latitude,
-      longitude: coords.longitude
-    });
+    placedEntity.setAttribute("gps-entity-place", { latitude, longitude });
+    placedEntity.removeAttribute("position"); // on bascule sur position réelle
 
-    // Enregistre côté serveur
-    const res = await fetch(`/api/save-position/${currentPlantCode}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        latitude: coords.latitude,
-        longitude: coords.longitude
-      })
-    });
+    const { error } = await supabase.from("Plants").insert([{
+      id: currentPlantCode,
+      latitude,
+      longitude
+    }]);
 
-    const data = await res.json();
-    if (data.success) {
-      alert("Plante positionnée et enregistrée !");
-    } else {
-      alert("Erreur lors de l'enregistrement : " + (data.error || ''));
-    }
+    if (error) throw error;
 
+    alert("Plante enregistrée !");
   } catch (err) {
-    alert("Erreur GPS ou réseau : " + err.message);
+    console.error(err);
+    alert("Erreur : " + err.message);
   }
 }
 
+// Charger les plantes déjà sauvegardées
 async function loadPlacedPlants() {
   try {
-    const res = await fetch('/api/get-all-positions');
-    if (!res.ok) throw new Error("Impossible de charger les plantes placées.");
-    const plants = await res.json();
+    const { data, error } = await supabase.from("Plants").select("*");
+    if (error) throw error;
 
-    const scene = document.querySelector('a-scene');
-    plants.forEach(({ code, latitude, longitude }) => {
-      const plant = document.createElement('a-entity');
-      plant.setAttribute('gps-entity-place', {
-        latitude,
-        longitude
-      });
-      plant.setAttribute('gltf-model', `../models/${code}/${code}.glb`);
-      plant.setAttribute('scale', '1 1 1');
-      plant.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
+    const scene = document.querySelector("a-scene");
+
+    data.forEach(({ id, latitude, longitude }) => {
+      const plant = document.createElement("a-entity");
+      plant.setAttribute("gps-entity-place", { latitude, longitude });
+      plant.setAttribute("glb-model", `models/${id}/${id}.glb`);
+      plant.setAttribute("scale", "1 1 1");
+      plant.setAttribute("gesture-handler", "minScale: 0.5; maxScale: 5");
       scene.appendChild(plant);
     });
   } catch (err) {
-    console.error(err);
+    console.error("Erreur de chargement Supabase :", err);
   }
 }
 
+// Initialisation des boutons
 window.onload = () => {
-  document.getElementById('loadPlantBtn').onclick = () => {
-    const code = document.getElementById('plantCodeInput').value.trim().toUpperCase();
+  document.getElementById("loadPlantBtn").onclick = () => {
+    const code = document.getElementById("plantCodeInput").value.trim().toUpperCase();
     if (code.length === 3) {
       loadPlant(code);
     } else {
-      alert("Entrez un code de plante valide (3 lettres).");
+      alert("Code plante invalide (3 lettres)");
     }
   };
 
-  document.getElementById('confirmPlacementBtn').onclick = confirmPlacement;
+  document.getElementById("confirmPlacementBtn").onclick = confirmPlacement;
 
   loadPlacedPlants();
 };
