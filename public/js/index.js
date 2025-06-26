@@ -82,7 +82,7 @@ function loadPlantModel(code) {
 
 function setPositionPlant(lat, lon) {
   if (!placedEntity) return;
-  placedEntity.setAttribute('gps-entity-place', { latitude: lat, longitude: lon });
+  placedEntity.setAttribute('gps-new-entity-place', { latitude: lat, longitude: lon });
   placedEntity.removeAttribute('position');
 }
 
@@ -141,7 +141,7 @@ function renderPlants() {
 
     if (dist < 200) {
       const entity = document.createElement('a-entity');
-      entity.setAttribute('gps-entity-place', {
+      entity.setAttribute('gps-new-entity-place', {
         latitude: plant.latitude,
         longitude: plant.longitude
       });
@@ -158,7 +158,6 @@ function renderPlants() {
 window.onload = () => {
   const el = document.querySelector("[gps-new-camera]");
   el.addEventListener("gps-camera-update-position", async(e) => {
-        if(!testEntityAdded) {
             alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
             const entity = document.createElement("a-box");
             entity.setAttribute("scale", {
@@ -172,8 +171,8 @@ window.onload = () => {
                 longitude: e.detail.position.longitude
             });
             document.querySelector("a-scene").appendChild(entity);
-        }
   });
+
 
 
 
