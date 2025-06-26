@@ -59,7 +59,7 @@ function updatePositionDisplay() {
 }
 
 function loadPlantModel(code) {
-  const modelPath = `models/${code}/${code}.glb`;
+  modelPath = `models/${code}/${code}.glb`;
   const scene = document.querySelector('a-scene');
 
   placedEntity = document.createElement('a-entity');
@@ -67,7 +67,7 @@ function loadPlantModel(code) {
   placedEntity.setAttribute('scale', { x: 1, y: 1, z: 1 });
   placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
   placedEntity.setAttribute('id', 'placed-plant');
-  placedEntity.setAttribute('gps-entity-place', {
+  placedEntity.setAttribute('gps-new-entity-place', {
     latitude: userPosition.latitude + 0.001,
     longitude: userPosition.longitude
   });
@@ -101,6 +101,7 @@ function confirmPosition() {
 
   setPositionPlant(userPosition.latitude, userPosition.longitude);
   storedPlants.push(newPlant);
+
 
   alert("Plante enregistrée localement.");
 }
