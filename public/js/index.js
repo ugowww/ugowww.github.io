@@ -1,6 +1,3 @@
-import * as LocAR from 'locar';
-import * as THREE from 'three';
-
 let userPosition = null;
 let watchId = null;
 let placedEntity = null;
@@ -162,6 +159,7 @@ window.onload = () => {
     const code = document.getElementById('plantCodeInput').value.trim().toUpperCase();
     if (code.length === 3) {
       loadPlantModel(code);
+      alert(`Plante ${code} chargée`);
     } else {
       alert("Code plante invalide (3 lettres).");
     }
