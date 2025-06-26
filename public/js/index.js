@@ -75,6 +75,11 @@ function loadPlantModel(code) {
     latitude: userPosition.latitude + 0.001,
     longitude: userPosition.longitude
   });
+
+  const thumb = document.getElementById('plantThumb');
+  thumb.src = thumbPath;
+  thumb.style.display = 'block';
+
   console.log(`Chargement du modèle pour la plante ${code} depuis ${modelPath}`);
   scene.appendChild(placedEntity);
   currentPlantCode = code;
