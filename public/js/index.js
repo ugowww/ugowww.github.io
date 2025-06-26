@@ -63,7 +63,7 @@ function loadPlantModel(code) {
   const scene = document.querySelector('a-scene');
 
   placedEntity = document.createElement('a-entity');
-  placedEntity.setAttribute('gltf-model', modelPath);
+  placedEntity.setAttribute('gltf-model : modelPath');
   placedEntity.setAttribute('scale', { x: 1, y: 1, z: 1 });
   placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
   placedEntity.setAttribute('id', 'placed-plant');
