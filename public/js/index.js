@@ -68,10 +68,9 @@ function loadPlantModel(code) {
   placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
   placedEntity.setAttribute('id', 'placed-plant');
   placedEntity.setAttribute('gps-new-entity-place', {
-    latitude: userPosition.latitude + 0.001,
-    longitude: userPosition.longitude
+                    latitude: userPosition.latitude,
+                    longitude: userPosition.longitude
   });
-
   const thumb = document.getElementById('plantThumb');
   thumb.src = `models/${code}/thumb.jpg`;
   thumb.style.display = 'block';
