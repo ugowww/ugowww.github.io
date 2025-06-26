@@ -156,6 +156,14 @@ function renderPlants() {
 
 // === Initialisation ===
 window.onload = () => {
+  el.addEventListener("gps-camera-update-position", e => {
+        if(!testEntityAdded) {
+            alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
+        }
+  });
+
+
+
   document.getElementById('loadPlantBtn').onclick = () => {
     const code = document.getElementById('plantCodeInput').value.trim().toUpperCase();
     if (code.length === 3) {
