@@ -1,3 +1,6 @@
+import * as LocAR from 'locar';
+import * as THREE from 'three';
+
 let userPosition = null;
 let watchId = null;
 let placedEntity = null;
