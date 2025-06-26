@@ -65,22 +65,18 @@ function loadPlantModel(code) {
   const modelPath = `models/${code}/${code}.glb`;
   const scene = document.querySelector('a-scene');
 
-  if (placedEntity) {
-    placedEntity.remove();
-  }
-
   placedEntity = document.createElement('a-entity');
   placedEntity.setAttribute('gltf-model', modelPath);
   placedEntity.setAttribute('scale', { x: 1, y: 1, z: 1 });
   placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
   placedEntity.setAttribute('id', 'placed-plant');
-  placedEntity.setAttribute('gps-new-entity-place', {
+  placedEntity.setAttribute('gps-entity-place', {
     latitude: userPosition.latitude + 0.001,
     longitude: userPosition.longitude
   });
 
   const thumb = document.getElementById('plantThumb');
-  thumb.src = thumbPath;
+  thumb.src = `models/${code}/thumb.jpg`;
   thumb.style.display = 'block';
 
   console.log(`Chargement du modèle pour la plante ${code} depuis ${modelPath}`);
