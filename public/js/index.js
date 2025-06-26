@@ -103,6 +103,7 @@ function confirmPosition() {
 
 
   alert("Plante enregistrée localement.");
+  console.log("Plante enregistrée :", newPlant);
 }
 
 function destroy(entity) {
@@ -156,9 +157,21 @@ function renderPlants() {
 // === Initialisation ===
 window.onload = () => {
   const el = document.querySelector("[gps-new-camera]");
-  el.addEventListener("gps-camera-update-position", e => {
+  el.addEventListener("gps-camera-update-position", async(e) => {
         if(!testEntityAdded) {
             alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
+            const entity = document.createElement("a-box");
+            entity.setAttribute("scale", {
+                x: 20, 
+                y: 20,
+                z: 20
+            });
+            entity.setAttribute('material', { color: 'red' } );
+            entity.setAttribute('gps-new-entity-place', {
+                latitude: e.detail.position.latitude + 0.001,
+                longitude: e.detail.position.longitude
+            });
+            document.querySelector("a-scene").appendChild(entity);
         }
   });
 
