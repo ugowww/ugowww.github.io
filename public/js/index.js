@@ -63,7 +63,7 @@ async function renderPlantsFromDatabase() {
     entity.setAttribute('position', '1 1 1');
     entity.setAttribute('scale', '1 1 1');
     entity.setAttribute('gps-new-entity-place', 'latitude:'+ plant.latitude + '; longitude:'+ plant.longitude);
-    entity.setAttribute('glb-model', `models/${plant.id}/${plant.id}.glb`);
+    entity.setAttribute('gltf-model', `models/${plant.id}/${plant.id}.glb`);
     // D'abord ajouter à la scène
     document.querySelector('a-scene').flushToDOM(true);
     document.querySelector('a-scene').appendChild(entity);
@@ -112,7 +112,7 @@ function loadPlantModel(code) {
   modelPath = `models/${code}/${code}.glb`;
   scalepos = "1 1 1" 
   placedEntity = document.createElement('a-entity');
-  placedEntity.setAttribute('glb-model', modelPath);
+  placedEntity.setAttribute('gltf-model', modelPath);
   placedEntity.setAttribute('position', { x: 0, y: 0, z: 0 });
   placedEntity.setAttribute('scale', { x: 1, y: 1, z: 1 });
   placedEntity.setAttribute('gps-new-entity-place', {
@@ -158,9 +158,9 @@ const { data, error } = await _supabase
       longitude: newPlant.longitude
     }
   ], {
-    onConflict: 'id' // tells Supabase to use 'id' to detect conflict
+    onConflict: 'id'
   })
-  .select(); // optional, only if you want the updated row returned
+  .select();
 
   if (error) {
     log("Erreur lors de l'enregistrement Supabase.");
@@ -172,7 +172,7 @@ const { data, error } = await _supabase
 
   
   //alert("Plante enregistrée localement.");
-  log("Plante enregistrée :", newPlant);
+  log("Plante enregistrée :", newPlant.id);
 }
 
 function haversine(lat1, lon1, lat2, lon2) {
@@ -204,7 +204,7 @@ function renderPlants() {
 
     if (dist < 200) {
       const entity = document.createElement('a-entity');
-      entity.setAttribute('glb-model', `models/${plant.id}/${plant.id}.glb`);
+      entity.setAttribute('gltf-model', `models/${plant.id}/${plant.id}.glb`);
       entity.setAttribute('position', { x: 0, y: 0, z: 0 });
       entity.setAttribute('scale', { x: 1, y: 1, z: 1 });
       //entity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
@@ -251,7 +251,7 @@ window.onload = () => {
               latitude :  userPosition.latitude,
               longitude: userPosition.longitude
             });
-            placedEntity.setAttribute('glb-model', 'models/AEP/AEP.glb');
+            placedEntity.setAttribute('gltf-model', 'models/AEP/AEP.glb');
             document.querySelector("a-scene").appendChild(placedEntity);
   });
 
