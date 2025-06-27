@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@supabase/supabase-js": "^2.50.0",
+    "@supabase/supabase-js": "^2.50.2",
     "ar.js": "^2.0.8",
     "express": "^5.1.0",
     "fs": "^0.0.1-security",
