@@ -51,13 +51,14 @@ async function renderPlantsFromDatabase() {
   data.forEach(plant => {
     const entity = document.createElement('a-entity');
 
-    entity.setAttribute('gps-new-entity-place', {
-      latitude: plant.latitude,
-      longitude: plant.longitude
-    });
     entity.setAttribute('glb-model', `models/${plant.id}/${plant.id}.glb`);
-    entity.setAttribute('scale', '1 1 1');
+    entity.setAttribute('scale', {
+                x: 1, 
+                y: 1,
+                z: 1
+            });
     entity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
+    entity.setAttribute('gps-new-entity-place', `latitude: ${plant.latitude}; longitude: ${plant.longitude}`);
     entity.classList.add('rendered-plant-db');
 
     scene.appendChild(entity);
@@ -197,13 +198,17 @@ function renderPlants() {
 
     if (dist < 200) {
       const entity = document.createElement('a-entity');
-      entity.setAttribute('gps-new-entity-place', {
+      entity.setAttribute('glb-model', `models/${plant.id}/${plant.id}.glb`);
+      entity.setAttribute('scale', {
+                x: 1, 
+                y: 1,
+                z: 1
+            });
+      entity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
+            entity.setAttribute('gps-new-entity-place', {
         latitude: plant.latitude,
         longitude: plant.longitude
       });
-      entity.setAttribute('glb-model', `models/${plant.id}/${plant.id}.glb`);
-      entity.setAttribute('scale', '1 1 1');
-      entity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
       entity.classList.add('rendered-plant');
       scene.appendChild(entity);
     }
