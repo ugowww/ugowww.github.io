@@ -79,9 +79,9 @@ async function renderPlantsFromDatabase() {
     entity.setAttribute('scale', '1 1 1');
     entity.setAttribute('gps-new-entity-place', 'latitude:'+ plant.latitude + '; longitude:'+ plant.longitude);
     entity.setAttribute('gltf-model', url); //`models/${plant.id}/${plant.id}.glb`
-
-    entity.dataset.lat = plant.latitude;
-    entity.dataset.lon = plant.longitude;
+    entity.setAttribute('data-id', plant.id)
+    entity.setAttribute('data-lat', plant.latitude);
+    entity.setAttribute('data-lon', plant.longitude);
     
     document.querySelector('a-scene').flushToDOM(true);
     document.querySelector('a-scene').appendChild(entity);
@@ -204,22 +204,26 @@ function haversine(lat1, lon1, lat2, lon2) {
 }
 
 function updateModelPositions(userPos) {
-  document.querySelectorAll('.rendered-plant-db').forEach((entity) => {
-    const lat = parseFloat(entity.dataset.lat);
-    const lon = parseFloat(entity.dataset.lon);
-    log("reviewing entity", entity.dataset.id, "at", lat, lon);
+  const el = document.querySelector("[gps-new-camera]");
+  el.addEventListener("gps-camera-update-position", e => {
+    document.querySelectorAll('.rendered-plant-db').forEach((entity) => {
+      const lat = parseFloat(entity.dataset.lat);
+      const lon = parseFloat(entity.dataset.lon);
+      log("reviewing entity", entity.dataset.id);
 
-    const dist = haversine(userPos.latitude, userPos.longitude, lat, lon);
-    if (dist < 200) {
-      entity.setAttribute('visible', 'true');
-      entity.setAttribute('gps-new-entity-place', {
-        latitude: lat,
-        longitude: lon
-      });
-      log('Plante ID:', entity.dataset.id, ' UPDATE :', lat, lon);
-    } else {
-      entity.setAttribute('visible', 'false'); // HIDE IF TOO FAR
-    }
+     log("Entity position:", lat, lon);
+      const dist = haversine(userPos.latitude, userPos.longitude, lat, lon);
+      if (dist < 200) {
+        entity.setAttribute('visible', 'true');
+        entity.setAttribute('gps-new-entity-place', {
+          latitude: lat,
+          longitude: lon
+        });
+        log('Plante ID:', entity.dataset.id, ' UPDATE :', lat, lon);
+      } else {
+        entity.setAttribute('visible', 'false'); // HIDE IF TOO FAR
+      }
+    });
   });
 }
 
@@ -233,8 +237,6 @@ window.onload = () => {
             //alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
             log(`Position GPS initiale: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
   });
-
-
 
 
   document.getElementById('loadPlantBtn').onclick = () => {
