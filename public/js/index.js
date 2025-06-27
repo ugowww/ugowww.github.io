@@ -60,11 +60,10 @@ async function renderPlantsFromDatabase() {
   data.forEach(plant => {
     const entity = document.createElement('a-entity');
     entity.classList.add('rendered-plant-db');
-    entity.setAttribute('position', '1 1 1');
+    entity.setAttribute('position', '0 0 0');
     entity.setAttribute('scale', '1 1 1');
     entity.setAttribute('gps-new-entity-place', 'latitude:'+ plant.latitude + '; longitude:'+ plant.longitude);
     entity.setAttribute('gltf-model', `models/${plant.id}/${plant.id}.glb`);
-    // D'abord ajouter à la scène
     document.querySelector('a-scene').flushToDOM(true);
     document.querySelector('a-scene').appendChild(entity);
     log(`Plante ${plant.id} chargée à ${plant.latitude}, ${plant.longitude}`);
@@ -223,7 +222,7 @@ function renderPlants() {
 window.onload = () => {
 
   loadFromSupabase()
-  //renderPlantsFromDatabase();
+  renderPlantsFromDatabase();
   entityadded = false;
   const el = document.querySelector("[gps-new-camera]");
   el.addEventListener("gps-camera-update-position", async(e) => {
