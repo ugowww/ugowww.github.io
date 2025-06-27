@@ -142,12 +142,18 @@ async function confirmPosition() {
 
   setPositionPlant(userPosition.latitude, userPosition.longitude);
 
-  const { data, error } = await _supabase
+const { data, error } = await _supabase
   .from('Plants')
-  .insert([
-  {id : newPlant.id, latitude: newPlant.latitude, longitude: newPlant.longitude},
-  ])
-  .select();
+  .upsert([
+    {
+      id: newPlant.id,
+      latitude: newPlant.latitude,
+      longitude: newPlant.longitude
+    }
+  ], {
+    onConflict: 'id' // tells Supabase to use 'id' to detect conflict
+  })
+  .select(); // optional, only if you want the updated row returned
 
   if (error) {
     alert("Erreur lors de l'enregistrement Supabase.");
@@ -212,7 +218,7 @@ window.onload = () => {
   entityadded = false;
   const el = document.querySelector("[gps-new-camera]");
   el.addEventListener("gps-camera-update-position", async(e) => {
-            if(entityadded) return; // Ne pas ajouter si déjà ajouté
+            //if(entityadded) return; // Ne pas ajouter si déjà ajouté
             entityadded = true;
             //alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
             console.log(`Position GPS initiale: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
@@ -233,8 +239,8 @@ window.onload = () => {
             const placedEntity = document.createElement('a-entity');
             placedEntity.setAttribute('glb-model', 'models/AEP/AEP.glb');
             placedEntity.setAttribute('scale', { x: 20, y: 20, z: 20 });
-            placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
-            placedEntity.setAttribute('id', 'placed-plant');
+            //placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
+            //placedEntity.setAttribute('id', 'placed-plant');
             placedEntity.setAttribute('gps-new-entity-place', {
                 latitude: e.detail.position.latitude + 0.001,
                 longitude: e.detail.position.longitude
