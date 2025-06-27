@@ -7,7 +7,7 @@ let storedPlants = []; // JSON local [{ id, latitude, longitude }]
 const { createClient } = supabase
 const SUPABASE_URL = 'https://ksgrrlzmervlrpdjtprg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzZ3JybHptZXJ2bHJwZGp0cHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3NTIwNzUsImV4cCI6MjA2NjMyODA3NX0._d8aSPBnQzNA08zuRzE4GAHLpu-wm7BcLixnqK9RgZg';
-const _supabase = supabase.createClient(supabaseUrl, supabaseKey)
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 console.log('Supabase Instance: ', _supabase)
 
