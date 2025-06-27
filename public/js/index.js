@@ -238,16 +238,16 @@ function renderPlants() {
 window.onload = () => {
 
   loadFromSupabase()
-  //renderPlantsFromDatabase();
-  renderedPlants = false;
+  renderPlantsFromDatabase();
+  renderedplants = false;
   const el = document.querySelector("[gps-new-camera]");
   el.addEventListener("gps-camera-update-position", async(e) => {
             //alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
             log(`Position GPS initiale: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
 
-            if(renderedPlants === false) {
-              renderedPlants = true;
-              renderPlantsFromDatabase();
+            if(renderedplants === false) {
+              renderedplants = true;
+              //renderPlantsFromDatabase();
             }
   });
 

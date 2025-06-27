@@ -21,10 +21,9 @@
     </div>
 
     <img id="plantThumb" src="" alt="Miniature plante">
-    <!--mindar-image="filterMinCF:0.0001; filterBeta: 0.001"-->
-    <a-scene   gps-camera-debug embedded arjs='sourceType: webcam; debugUIEnabled: true;' vr-mode-ui="enabled: true">
+    <a-scene mindar-image="filterMinCF:0.0001; filterBeta: 0.001"  gps-camera-debug embedded arjs='sourceType: webcam; debugUIEnabled: true;' vr-mode-ui="enabled: true">
       <a-camera gps-new-camera rotation-reader></a-camera>
-      <a-entity camera></a-entity>
+      //<a-entity camera></a-entity>
       <div id="debugDisplay">
       <div id="positionDisplay">GPS: en attente...</div>
       <div id="log-panel"></div>
