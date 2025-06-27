@@ -148,12 +148,6 @@ async function confirmPosition() {
   console.log("Plante enregistrée :", newPlant);
 }
 
-function destroy(entity) {
-  if (entity && entity.parentNode) {
-    entity.parentNode.removeChild(entity);
-  }
-}
-
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 6371e3; // m
   const toRad = x => x * Math.PI / 180;
@@ -200,7 +194,7 @@ function renderPlants() {
 window.onload = () => {
 
   loadFromSupabase()
-
+  renderPlantsFromDatabase();
   entityadded = false;
   const el = document.querySelector("[gps-new-camera]");
   el.addEventListener("gps-camera-update-position", async(e) => {
