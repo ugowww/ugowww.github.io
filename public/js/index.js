@@ -57,7 +57,7 @@ async function renderPlantsFromDatabase() {
                 y: 1,
                 z: 1
             });
-    entity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
+    //entity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
     entity.setAttribute('gps-new-entity-place', `latitude: ${plant.latitude}; longitude: ${plant.longitude}`);
     entity.classList.add('rendered-plant-db');
 
@@ -107,7 +107,7 @@ function loadPlantModel(code) {
   placedEntity = document.createElement('a-entity');
   placedEntity.setAttribute('glb-model', modelPath);
   placedEntity.setAttribute('scale', { x: 1, y: 1, z: 1 });
-  placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
+  //placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
   placedEntity.setAttribute('id', 'placed-plant');
   placedEntity.setAttribute('gps-new-entity-place', {
                     latitude: userPosition.latitude +0.001,
@@ -204,7 +204,7 @@ function renderPlants() {
                 y: 1,
                 z: 1
             });
-      entity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
+      //entity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
             entity.setAttribute('gps-new-entity-place', {
         latitude: plant.latitude,
         longitude: plant.longitude
