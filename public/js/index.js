@@ -222,26 +222,12 @@ function renderPlants() {
 window.onload = () => {
 
   loadFromSupabase()
-  renderPlantsFromDatabase();
-  entityadded = false;
+  //renderPlantsFromDatabase();
+
   const el = document.querySelector("[gps-new-camera]");
   el.addEventListener("gps-camera-update-position", async(e) => {
-            //if(entityadded) return; // Ne pas ajouter si déjà ajouté
-            entityadded = true;
             //alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
             log(`Position GPS initiale: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
-            const entity = document.createElement("a-box");
-            entity.setAttribute("scale", {
-                x: 20, 
-                y: 20,
-                z: 20
-            });
-            entity.setAttribute('material', { color: 'red' } );
-            entity.setAttribute('gps-new-entity-place', {
-                latitude: e.detail.position.latitude + 0.001,
-                longitude: e.detail.position.longitude +0.001
-            });
-            document.querySelector("a-scene").appendChild(entity);
             renderPlantsFromDatabase();
   });
 
