@@ -72,7 +72,7 @@ async function renderPlantsFromDatabase() {
   document.querySelectorAll('.rendered-plant-db').forEach(e => e.remove());
 
   data.forEach(async plant => {
-    const url = await getModelURL(plant.id, `${plant.id}/${plant.id}.glb`);
+    const url = await getModelURL(plant.id, `${plant.id}.glb`);
     if (!url) return;
     const entity = document.createElement('a-entity');
     entity.classList.add('rendered-plant-db');
