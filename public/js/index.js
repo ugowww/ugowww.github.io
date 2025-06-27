@@ -92,7 +92,7 @@ function loadPlantModel(code) {
 
 //function to load the batch of plants stored in the json file
 function loadjson(){
-  fetch('../models/pos.json')
+  fetch('/models/pos.json')
     .then(response => response.json())
     .then(data => {
       storedPlants = data.plants || [];
@@ -192,7 +192,7 @@ function renderPlants() {
 // === Initialisation ===
 window.onload = () => {
 
-  //loadjson();
+  loadjson();
 
   entityadded = false;
   const el = document.querySelector("[gps-new-camera]");
