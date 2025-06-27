@@ -80,6 +80,10 @@ async function renderPlantsFromDatabase() {
     entity.setAttribute('scale', '1 1 1');
     entity.setAttribute('gps-new-entity-place', 'latitude:'+ plant.latitude + '; longitude:'+ plant.longitude);
     entity.setAttribute('gltf-model', url); //`models/${plant.id}/${plant.id}.glb`
+
+    entity.dataset.lat = plant.latitude;
+    entity.dataset.lon = plant.longitude;
+    
     document.querySelector('a-scene').flushToDOM(true);
     document.querySelector('a-scene').appendChild(entity);
     log(`Plante ${plant.id} chargée à ${plant.latitude}, ${plant.longitude}`);
@@ -234,21 +238,39 @@ function renderPlants() {
   });
 }
 
+function updateModelPositions(userPos) {
+  document.querySelectorAll('.rendered-plant-db').forEach((entity) => {
+    const lat = parseFloat(entity.dataset.lat);
+    const lon = parseFloat(entity.dataset.lon);
+
+    const dist = haversine(userPos.latitude, userPos.longitude, lat, lon);
+    if (dist < 200) {
+      entity.setAttribute('visible', 'true');
+      entity.setAttribute('gps-new-entity-place', {
+        latitude: lat,
+        longitude: lon
+      });
+    } else {
+      entity.setAttribute('visible', 'false'); // Optional: hide if too far
+    }
+  });
+}
+
 // === INIT ===
 window.onload = () => {
 
   loadFromSupabase()
   renderPlantsFromDatabase();
-  renderedplants = false;
   const el = document.querySelector("[gps-new-camera]");
   el.addEventListener("gps-camera-update-position", async(e) => {
             //alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
             log(`Position GPS initiale: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
-
-            if(renderedplants === false) {
-              renderedplants = true;
-              //renderPlantsFromDatabase();
-            }
+              const pos = {
+                latitude: e.detail.position.latitude,
+                longitude: e.detail.position.longitude
+              };
+              userPosition = pos;
+              updateModelPositions(pos);
   });
 
 
