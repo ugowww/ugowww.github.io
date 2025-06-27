@@ -1,17 +1,58 @@
+import { createClient } from '@supabase/supabase-js'
+
 let userPosition = null;
 let watchId = null;
 let placedEntity = null;
 let currentPlantCode = null;
 let storedPlants = []; // JSON local [{ id, latitude, longitude }]
 
-function getCurrentPositionOnce() {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      return reject("Géolocalisation non supportée.");
-    }
-    navigator.geolocation.getCurrentPosition(resolve, reject, {
-      enableHighAccuracy: true
+const SUPABASE_URL = 'https://ksgrrlzmervlrpdjtprg.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzZ3JybHptZXJ2bHJwZGp0cHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3NTIwNzUsImV4cCI6MjA2NjMyODA3NX0._d8aSPBnQzNA08zuRzE4GAHLpu-wm7BcLixnqK9RgZg';
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+async function loadFromSupabase() {
+  const { data, error } = await supabase.from('plants').select('*');
+  if (error) {
+    console.error("Erreur chargement depuis Supabase :", error);
+    return;
+  }
+  storedPlants = data;
+  renderPlants();
+}
+
+async function renderPlantsFromDatabase() {
+  if (!window.supabase) {
+    console.error("Supabase n'est pas initialisé !");
+    return;
+  }
+
+  const { data, error } = await supabase.from('Plants').select('*');
+
+  if (error) {
+    console.error("Erreur lors du chargement des plantes :", error);
+    return;
+  }
+
+  console.log(`Plantes chargées depuis Supabase : ${data.length}`);
+
+  const scene = document.querySelector('a-scene');
+
+  // Supprime les plantes déjà affichées (hors placedEntity)
+  document.querySelectorAll('.rendered-plant-db').forEach(e => e.remove());
+
+  data.forEach(plant => {
+    const entity = document.createElement('a-entity');
+
+    entity.setAttribute('gps-new-entity-place', {
+      latitude: plant.latitude,
+      longitude: plant.longitude
     });
+    entity.setAttribute('glb-model', `models/${plant.id}/${plant.id}.glb`);
+    entity.setAttribute('scale', '1 1 1');
+    entity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
+    entity.classList.add('rendered-plant-db');
+
+    scene.appendChild(entity);
   });
 }
 
@@ -39,23 +80,6 @@ function startTrackingPosition() {
       timeout: 5000
     }
   );
-}
-
-function stopTrackingPosition() {
-  if (watchId !== null) {
-    navigator.geolocation.clearWatch(watchId);
-    watchId = null;
-  }
-}
-
-function waitForGPSReady(callback) {
-  const onGPSUpdate = (e) => {
-    console.log('GPS ready at:', e.detail.position);
-    document.removeEventListener('gps-camera-update-position', onGPSUpdate);
-    callback(e.detail.position);
-  };
-
-  document.addEventListener('gps-camera-update-position', onGPSUpdate);
 }
 
 function updatePositionDisplay() {
@@ -90,26 +114,13 @@ function loadPlantModel(code) {
   currentPlantCode = code;
 }
 
-//function to load the batch of plants stored in the json file
-function loadjson(){
-  fetch('/models/pos.json')
-    .then(response => response.json())
-    .then(data => {
-      storedPlants = data.plants || [];
-      console.log(`Chargement des plantes depuis JSON : ${storedPlants.length} plantes chargées.`);
-    }
-    ).catch(error => {
-      console.error("Erreur lors du chargement du fichier JSON :", error);
-    });
-}
-
 function setPositionPlant(lat, lon) {
   if (!placedEntity) return;
   placedEntity.setAttribute('gps-new-entity-place', { latitude: lat, longitude: lon });
   placedEntity.removeAttribute('position');
 }
 
-function confirmPosition() {
+async function confirmPosition() {
   if (!userPosition || !currentPlantCode) {
     //alert("Chargez une plante et attendez la position.");
     return;
@@ -122,21 +133,17 @@ function confirmPosition() {
   };
 
   setPositionPlant(userPosition.latitude, userPosition.longitude);
+
+  const { error } = await supabase.from('plants').insert(newPlant);
+  if (error) {
+    alert("Erreur lors de l'enregistrement Supabase.");
+    console.error(error);
+    return;
+  }
+
   storedPlants.push(newPlant);
 
-  //add the new plant to the local json file
-  const jsonData = { plants: storedPlants };
-  const jsonString = JSON.stringify(jsonData, null, 2);
-  const blob = new Blob([jsonString], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = '/models/pos.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-
+  
   //alert("Plante enregistrée localement.");
   console.log("Plante enregistrée :", newPlant);
 }
@@ -189,10 +196,10 @@ function renderPlants() {
   });
 }
 
-// === Initialisation ===
+// === INIT ===
 window.onload = () => {
 
-  loadjson();
+  loadFromSupabase()
 
   entityadded = false;
   const el = document.querySelector("[gps-new-camera]");
