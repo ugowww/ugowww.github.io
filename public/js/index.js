@@ -109,10 +109,10 @@ function updatePositionDisplay() {
 
 function loadPlantModel(code) {
   modelPath = `models/${code}/${code}.glb`;
-
+  scalepos = "1 1 1" 
   placedEntity = document.createElement('a-entity');
   placedEntity.setAttribute('glb-model', modelPath);
-  placedEntity.setAttribute('scale', '1 1 1');
+  placedEntity.setAttribute('scale', scalepos);
   //placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
   placedEntity.setAttribute('id', 'placed-plant');
   placedEntity.setAttribute('gps-new-entity-place', {

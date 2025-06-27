@@ -36,6 +36,7 @@
     <a-scene gps-camera-debug embedded arjs='sourceType: webcam; debugUIEnabled: true;' vr-mode-ui="enabled: true">
     
       <a-camera gps-new-camera rotation-reader></a-camera>
+      <a-entity id="placedEntity" glb-model="models/AEP/AEP.glb" scale="1 1 1" gps-new-entity-place="latitude: 50.6494976; longitude: 3.0867456"></a-entity>
       <div id="positionDisplay">GPS: en attente...</div>
     </a-scene>
   </body>

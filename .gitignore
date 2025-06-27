@@ -137,3 +137,9 @@ dist
 certificate.crt
 csr.pem
 private.key
+test/pageobjects/login.page.ts
+test/pageobjects/page.ts
+/test
+/chromedriver-mobile
+wdio.conf.js
+wdio.conf.ts
