@@ -76,7 +76,7 @@ async function renderPlantsFromDatabase() {
     if (!url) return;
     const entity = document.createElement('a-entity');
     entity.classList.add('rendered-plant-db');
-    entity.setAttribute('position', '0 0 0');
+    //entity.setAttribute('position', '0 0 0');
     entity.setAttribute('scale', '1 1 1');
     entity.setAttribute('gps-new-entity-place', 'latitude:'+ plant.latitude + '; longitude:'+ plant.longitude);
     entity.setAttribute('gltf-model', url); //`models/${plant.id}/${plant.id}.glb`
