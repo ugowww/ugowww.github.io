@@ -48,6 +48,16 @@ function stopTrackingPosition() {
   }
 }
 
+function waitForGPSReady(callback) {
+  const onGPSUpdate = (e) => {
+    console.log('GPS ready at:', e.detail.position);
+    document.removeEventListener('gps-camera-update-position', onGPSUpdate);
+    callback(e.detail.position);
+  };
+
+  document.addEventListener('gps-camera-update-position', onGPSUpdate);
+}
+
 function updatePositionDisplay() {
   const el = document.getElementById('positionDisplay');
   if (!userPosition) {
@@ -60,7 +70,6 @@ function updatePositionDisplay() {
 
 function loadPlantModel(code) {
   modelPath = `models/${code}/${code}.glb`;
-  const scene = document.querySelector('a-scene');
 
   placedEntity = document.createElement('a-entity');
   placedEntity.setAttribute('glb-model', modelPath);
@@ -68,15 +77,16 @@ function loadPlantModel(code) {
   placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
   placedEntity.setAttribute('id', 'placed-plant');
   placedEntity.setAttribute('gps-new-entity-place', {
-                    latitude: userPosition.latitude,
+                    latitude: userPosition.latitude +0.001,
                     longitude: userPosition.longitude
   });
+  document.querySelector("a-scene").appendChild(placedEntity);
+
   const thumb = document.getElementById('plantThumb');
   thumb.src = `models/${code}/thumb.jpg`;
   thumb.style.display = 'block';
 
   console.log(`Chargement du modèle pour la plante ${code} depuis ${modelPath}`);
-  scene.appendChild(placedEntity);
   currentPlantCode = code;
 }
 
@@ -91,7 +101,7 @@ function confirmPosition() {
     alert("Chargez une plante et attendez la position.");
     return;
   }
-
+  
   const newPlant = {
     id: currentPlantCode,
     latitude: userPosition.latitude,
@@ -156,9 +166,13 @@ function renderPlants() {
 
 // === Initialisation ===
 window.onload = () => {
+  entityadded = false;
   const el = document.querySelector("[gps-new-camera]");
   el.addEventListener("gps-camera-update-position", async(e) => {
+            if(entityadded) return; // Ne pas ajouter si déjà ajouté
+            entityadded = true;
             alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
+            console.log(`Position GPS initiale: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
             const entity = document.createElement("a-box");
             entity.setAttribute("scale", {
                 x: 20, 
