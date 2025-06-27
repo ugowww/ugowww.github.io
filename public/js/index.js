@@ -228,7 +228,11 @@ window.onload = () => {
   el.addEventListener("gps-camera-update-position", async(e) => {
             //alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
             log(`Position GPS initiale: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
-            renderPlantsFromDatabase();
+            renderedPlants = false;
+            if(renderedPlants === false) {
+              renderedPlants = true;
+              renderPlantsFromDatabase();
+            }
   });
 
 
