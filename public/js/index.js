@@ -192,7 +192,7 @@ function renderPlants() {
 // === Initialisation ===
 window.onload = () => {
 
-  loadjson();
+  //loadjson();
 
   entityadded = false;
   const el = document.querySelector("[gps-new-camera]");
