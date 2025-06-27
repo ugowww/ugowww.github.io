@@ -13,7 +13,7 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 console.log('Supabase Instance: ', _supabase)
 
 async function loadFromSupabase() {
-  const { data, error } = await supabase.from('plants').select('*');
+  const { data, error } = await _supabase.from('plants').select('*');
   if (error) {
     console.error("Erreur chargement depuis Supabase :", error);
     return;
@@ -23,12 +23,12 @@ async function loadFromSupabase() {
 }
 
 async function renderPlantsFromDatabase() {
-  if (!window.supabase) {
+  if (!window._supabase) {
     console.error("Supabase n'est pas initialisé !");
     return;
   }
 
-  const { data, error } = await supabase.from('Plants').select('*');
+  const { data, error } = await _supabase.from('Plants').select('*');
 
   if (error) {
     console.error("Erreur lors du chargement des plantes :", error);
@@ -136,7 +136,7 @@ async function confirmPosition() {
 
   setPositionPlant(userPosition.latitude, userPosition.longitude);
 
-  const { error } = await supabase.from('plants').insert(newPlant);
+  const { error } = await _supabase.from('plants').insert(newPlant);
   if (error) {
     alert("Erreur lors de l'enregistrement Supabase.");
     console.error(error);
