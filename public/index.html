@@ -35,9 +35,10 @@
 
     <a-scene gps-camera-debug embedded arjs='sourceType: webcam; debugUIEnabled: true;' vr-mode-ui="enabled: true">
       <a-camera gps-new-camera rotation-reader></a-camera>
-      
+      <div id="debugDisplay">
       <div id="positionDisplay">GPS: en attente...</div>
       <div id="log-panel"></div>
+      </div>
     </a-scene>
   </body>
 </html>

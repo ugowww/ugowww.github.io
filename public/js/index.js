@@ -52,24 +52,21 @@ async function renderPlantsFromDatabase() {
 
   log(`Plantes chargées depuis Supabase : ${data.length}`);
 
-  const scene = document.querySelector('a-scene');
+  const scene = document.querySelector('a-scene').flushToDOM(true);;
 
   // Supprime les plantes déjà affichées
   document.querySelectorAll('.rendered-plant-db').forEach(e => e.remove());
 
   data.forEach(plant => {
     const entity = document.createElement('a-entity');
-
-    entity.setAttribute('glb-model', `models/${plant.id}/${plant.id}.glb`);
     entity.classList.add('rendered-plant-db');
-    entity.setAttribute('position', { x: 0, y: 0, z: 0 });
-    entity.setAttribute('scale', { x: 1, y: 1, z: 1 });
-    entity.setAttribute('gps-new-entity-place', {
-      latitude :  plant.latitude,
-      longitude: plant.longitude
-    });
+    entity.setAttribute('position', '1 1 1');
+    entity.setAttribute('scale', '1 1 1');
+    entity.setAttribute('gps-new-entity-place', 'latitude:'+ plant.latitude + '; longitude:'+ plant.longitude);
+    entity.setAttribute('glb-model', `models/${plant.id}/${plant.id}.glb`);
     // D'abord ajouter à la scène
-    scene.appendChild(entity);
+    document.querySelector('a-scene').flushToDOM(true);
+    document.querySelector('a-scene').appendChild(entity);
     log(`Plante ${plant.id} chargée à ${plant.latitude}, ${plant.longitude}`);
 });
 }
@@ -123,7 +120,7 @@ function loadPlantModel(code) {
       longitude: userPosition.longitude
     });
   document.querySelector("a-scene").appendChild(placedEntity);
-
+  document.querySelector('a-scene').flushToDOM(true);
   const thumb = document.getElementById('plantThumb');
   thumb.src = `models/${code}/thumb.jpg`;
   thumb.style.display = 'block';
