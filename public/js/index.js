@@ -38,7 +38,7 @@ async function loadFromSupabase() {
 async function getModelURL(folder, filename) {
   const { data, error } = await _supabase
     .storage
-    .from('your-bucket-name')
+    .from('plants')
     .createSignedUrl(`${folder}/${filename}`, 6000); // URL valide 6000 secondes
 
   if (error) {
