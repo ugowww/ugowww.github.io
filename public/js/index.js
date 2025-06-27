@@ -17,7 +17,7 @@ function getCurrentPositionOnce() {
 
 function startTrackingPosition() {
   if (!navigator.geolocation) {
-    alert("Géolocalisation non supportée.");
+    //alert("Géolocalisation non supportée.");
     return;
   }
 
@@ -98,7 +98,7 @@ function setPositionPlant(lat, lon) {
 
 function confirmPosition() {
   if (!userPosition || !currentPlantCode) {
-    alert("Chargez une plante et attendez la position.");
+    //alert("Chargez une plante et attendez la position.");
     return;
   }
   
@@ -112,7 +112,7 @@ function confirmPosition() {
   storedPlants.push(newPlant);
 
 
-  alert("Plante enregistrée localement.");
+  //alert("Plante enregistrée localement.");
   console.log("Plante enregistrée :", newPlant);
 }
 
@@ -171,7 +171,7 @@ window.onload = () => {
   el.addEventListener("gps-camera-update-position", async(e) => {
             if(entityadded) return; // Ne pas ajouter si déjà ajouté
             entityadded = true;
-            alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
+            //alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
             console.log(`Position GPS initiale: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
             const entity = document.createElement("a-box");
             entity.setAttribute("scale", {
@@ -194,9 +194,9 @@ window.onload = () => {
     const code = document.getElementById('plantCodeInput').value.trim().toUpperCase();
     if (code.length === 3) {
       loadPlantModel(code);
-      alert(`Plante ${code} chargée`);
+      //alert(`Plante ${code} chargée`);
     } else {
-      alert("Code plante invalide (3 lettres).");
+      //alert("Code plante invalide (3 lettres).");
     }
   };
 
