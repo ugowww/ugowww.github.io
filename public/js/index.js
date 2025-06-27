@@ -13,7 +13,7 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 console.log('Supabase Instance: ', _supabase)
 
 async function loadFromSupabase() {
-  let { data: Plants, error } = await supabase
+  let { data: Plants, error } = await _supabase
   .from('Plants')
   .select('*')
   if (error) {
