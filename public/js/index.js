@@ -90,6 +90,20 @@ function loadPlantModel(code) {
   currentPlantCode = code;
 }
 
+//function to load the batch of plants stored in the json file
+function loadjson(){
+  fetch('../models/pos.json')
+    .then(response => response.json())
+    .then(data => {
+      storedPlants = data.plants || [];
+      console.log(`Chargement des plantes depuis JSON : ${storedPlants.length} plantes chargées.`);
+    }
+    ).catch(error => {
+      console.error("Erreur lors du chargement du fichier JSON :", error);
+    });
+}
+
+
 function loadPlantBatch(e) {
   if (!userPosition) {
     console.warn("Position utilisateur inconnue, batch non lancé.");
@@ -98,7 +112,6 @@ function loadPlantBatch(e) {
 
   const scene = document.querySelector("a-scene");
 
-  // Supprime toutes les entités précédemment ajoutées (hors placedEntity)
   document.querySelectorAll('.rendered-plant').forEach(e => e.remove());
 
   storedPlants.forEach(plant => {
@@ -113,7 +126,7 @@ function loadPlantBatch(e) {
       const entity = document.createElement('a-entity');
       entity.setAttribute('gltf-model', `models/${plant.id}/${plant.id}.glb`);
       entity.setAttribute('gps-new-entity-place', {
-        latitude: e.detail.position.latitude + 0.001, // Décalage pour éviter le conflit de position
+        latitude: e.detail.position.latitude + 0.001,
         longitude: e.detail.position.longitude
       });
       entity.setAttribute('scale', '1 1 1');
@@ -146,6 +159,18 @@ function confirmPosition() {
   setPositionPlant(userPosition.latitude, userPosition.longitude);
   storedPlants.push(newPlant);
 
+  //add the new plant to the local json file
+  const jsonData = { plants: storedPlants };
+  const jsonString = JSON.stringify(jsonData, null, 2);
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '../models/pos.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 
   //alert("Plante enregistrée localement.");
   console.log("Plante enregistrée :", newPlant);
@@ -201,6 +226,9 @@ function renderPlants() {
 
 // === Initialisation ===
 window.onload = () => {
+
+  loadjson();
+
   entityadded = false;
   const el = document.querySelector("[gps-new-camera]");
   el.addEventListener("gps-camera-update-position", async(e) => {
