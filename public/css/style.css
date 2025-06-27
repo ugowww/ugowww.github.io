@@ -32,3 +32,19 @@ button {
   border-radius: 8px;
   z-index: 999;
 }
+#log-panel {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    width: 300px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    font-family: monospace;
+    font-size: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    z-index: 9999;
+    white-space: pre-wrap;
+  }

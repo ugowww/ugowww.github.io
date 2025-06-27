@@ -10,7 +10,16 @@ const SUPABASE_URL = 'https://ksgrrlzmervlrpdjtprg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzZ3JybHptZXJ2bHJwZGp0cHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3NTIwNzUsImV4cCI6MjA2NjMyODA3NX0._d8aSPBnQzNA08zuRzE4GAHLpu-wm7BcLixnqK9RgZg';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-console.log('Supabase Instance: ', _supabase)
+log('Supabase Instance: ', _supabase)
+
+function log(msg) {
+  const panel = document.getElementById('log-panel');
+  if (panel) {
+    panel.textContent += msg + '\n';
+    panel.scrollTop = panel.scrollHeight; // auto-scroll to bottom
+  }
+  console.log(msg); // garder aussi dans la console
+}
 
 async function loadFromSupabase() {
 
@@ -19,7 +28,7 @@ async function loadFromSupabase() {
   .select('*')
 
   if (error) {
-    console.log("Erreur chargement depuis Supabase :", error);
+    log("Erreur chargement depuis Supabase :", error);
     return;
   }
   storedPlants = Plants;
@@ -28,7 +37,7 @@ async function loadFromSupabase() {
 
 async function renderPlantsFromDatabase() {
   if (!_supabase) {
-    console.error("Supabase n'est pas initialisé !");
+    log("Supabase n'est pas initialisé !");
     return;
   }
 
@@ -37,11 +46,11 @@ async function renderPlantsFromDatabase() {
   .select('*');
 
   if (error) {
-    console.error("Erreur lors du chargement des plantes :", error);
+    log("Erreur lors du chargement des plantes :", error);
     return;
   }
 
-  console.log(`Plantes chargées depuis Supabase : ${data.length}`);
+  log(`Plantes chargées depuis Supabase : ${data.length}`);
 
   const scene = document.querySelector('a-scene');
 
@@ -61,7 +70,7 @@ async function renderPlantsFromDatabase() {
     });
     // D'abord ajouter à la scène
     scene.appendChild(entity);
-    console.log(`Plante ${plant.id} chargée à ${plant.latitude}, ${plant.longitude}`);
+    log(`Plante ${plant.id} chargée à ${plant.latitude}, ${plant.longitude}`);
 });
 }
 
@@ -82,7 +91,7 @@ function startTrackingPosition() {
       //renderPlants(); // Réactualise les plantes visibles
     },
     err => {
-      console.error("Erreur GPS :", err);
+      log("Erreur GPS :", err);
     },
     {
       enableHighAccuracy: true,
@@ -98,7 +107,7 @@ function updatePositionDisplay() {
     el.innerText = "GPS: en attente...";
   } else {
     el.innerText = `GPS:\nLat: ${userPosition.latitude.toFixed(5)}\nLon: ${userPosition.longitude.toFixed(5)}`;
-    console.log(`Position actuelle: ${userPosition.latitude}, ${userPosition.longitude}`);
+    log(`Position actuelle: ${userPosition.latitude}, ${userPosition.longitude}`);
   }
 }
 
@@ -119,7 +128,7 @@ function loadPlantModel(code) {
   thumb.src = `models/${code}/thumb.jpg`;
   thumb.style.display = 'block';
 
-  console.log(`Chargement du modèle pour la plante ${code} depuis ${modelPath}`);
+  log(`Chargement du modèle pour la plante ${code} depuis ${modelPath}`);
   currentPlantCode = code;
 }
 
@@ -157,8 +166,8 @@ const { data, error } = await _supabase
   .select(); // optional, only if you want the updated row returned
 
   if (error) {
-    alert("Erreur lors de l'enregistrement Supabase.");
-    console.error(error);
+    log("Erreur lors de l'enregistrement Supabase.");
+    log(error);
     return;
   }
 
@@ -166,7 +175,7 @@ const { data, error } = await _supabase
 
   
   //alert("Plante enregistrée localement.");
-  console.log("Plante enregistrée :", newPlant);
+  log("Plante enregistrée :", newPlant);
 }
 
 function haversine(lat1, lon1, lat2, lon2) {
@@ -201,17 +210,15 @@ function renderPlants() {
       entity.setAttribute('glb-model', `models/${plant.id}/${plant.id}.glb`);
       entity.setAttribute('position', { x: 0, y: 0, z: 0 });
       entity.setAttribute('scale', { x: 1, y: 1, z: 1 });
+      //entity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
       entity.setAttribute('gps-new-entity-place', {
       latitude :  userPosition.latitude,
       longitude: userPosition.longitude
     });
-      //entity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
-      console.log(`Modèle ${plant.id} chargé et positionné.`);
-    }
-
-
       entity.classList.add('rendered-plant');
       scene.appendChild(entity);
+      log(`Modèle ${plant.id} chargé et positionné.`);
+    }
   });
 }
 
@@ -226,7 +233,7 @@ window.onload = () => {
             //if(entityadded) return; // Ne pas ajouter si déjà ajouté
             entityadded = true;
             //alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
-            console.log(`Position GPS initiale: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
+            log(`Position GPS initiale: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
             const entity = document.createElement("a-box");
             entity.setAttribute("scale", {
                 x: 20, 
