@@ -35,6 +35,20 @@ async function loadFromSupabase() {
   renderPlants();
 }
 
+async function getModelURL(folder, filename) {
+  const { data, error } = await _supabase
+    .storage
+    .from('your-bucket-name')
+    .createSignedUrl(`${folder}/${filename}`, 6000); // URL valide 6000 secondes
+
+  if (error) {
+    console.error('Erreur génération signed URL :', error);
+    return null;
+  }
+
+  return data.signedUrl;
+}
+
 async function renderPlantsFromDatabase() {
   if (!_supabase) {
     log("Supabase n'est pas initialisé !");
@@ -57,13 +71,15 @@ async function renderPlantsFromDatabase() {
   // Supprime les plantes déjà affichées
   document.querySelectorAll('.rendered-plant-db').forEach(e => e.remove());
 
-  data.forEach(plant => {
+  data.forEach(async plant => {
+    const url = await getModelURL(plant.id, `${plant.id}/${plant.id}.glb`);
+    if (!url) return;
     const entity = document.createElement('a-entity');
     entity.classList.add('rendered-plant-db');
     entity.setAttribute('position', '0 0 0');
     entity.setAttribute('scale', '1 1 1');
     entity.setAttribute('gps-new-entity-place', 'latitude:'+ plant.latitude + '; longitude:'+ plant.longitude);
-    entity.setAttribute('gltf-model', `models/${plant.id}/${plant.id}.glb`);
+    entity.setAttribute('gltf-model', url); //`models/${plant.id}/${plant.id}.glb`
     document.querySelector('a-scene').flushToDOM(true);
     document.querySelector('a-scene').appendChild(entity);
     log(`Plante ${plant.id} chargée à ${plant.latitude}, ${plant.longitude}`);
