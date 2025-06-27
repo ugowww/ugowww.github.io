@@ -42,10 +42,10 @@ async function getModelURL(folder, filename) {
     .createSignedUrl(`${folder}/${filename}`, 6000); // URL valide 6000 secondes
 
   if (error) {
-    console.error('Erreur génération signed URL :', error);
+    log("Erreur génération signed URL :", error);
     return null;
   }
-
+  log(`Modèle ${folder}/${filename} accessible à : ${data.signedUrl}`);
   return data.signedUrl;
 }
 
