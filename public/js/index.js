@@ -45,24 +45,28 @@ async function renderPlantsFromDatabase() {
 
   const scene = document.querySelector('a-scene');
 
-  // Supprime les plantes déjà affichées (hors placedEntity)
+  // Supprime les plantes déjà affichées
   document.querySelectorAll('.rendered-plant-db').forEach(e => e.remove());
 
   data.forEach(plant => {
     const entity = document.createElement('a-entity');
 
     entity.setAttribute('glb-model', `models/${plant.id}/${plant.id}.glb`);
-    entity.addEventListener('model-loaded', () => {
-      entity.setAttribute('position', '0 0 0');
-      entity.setAttribute('scale', '1 1 1');
-      entity.setAttribute('gps-new-entity-place', {
-        latitude: plant.latitude,
-        longitude: plant.longitude
-      });
     entity.classList.add('rendered-plant-db');
 
+    // D'abord ajouter à la scène
     scene.appendChild(entity);
-  });
+
+    // Puis écouter le chargement pour appliquer position/scale
+    entity.addEventListener('model-loaded', () => {
+      //entity.setAttribute('position', '0 0 0');
+      entity.setAttribute('scale', '1 1 1');
+      entity.setAttribute(
+      'gps-new-entity-place',
+      `latitude: ${plant.latitude}; longitude: ${plant.longitude}`
+    );
+      console.log(`Plante ${plant.id} chargée à ${plant.latitude}, ${plant.longitude}`);
+    });
 });
 }
 
