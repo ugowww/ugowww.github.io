@@ -13,17 +13,20 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 console.log('Supabase Instance: ', _supabase)
 
 async function loadFromSupabase() {
-  const { data, error } = await _supabase.from('plants').select('*');
+  let { data: Plants, error } = await supabase
+  .from('Plants')
+  .select('*')
   if (error) {
     console.error("Erreur chargement depuis Supabase :", error);
+    console.log("Erreur chargement depuis Supabase :", error);
     return;
   }
-  storedPlants = data;
+  storedPlants = Plants;
   renderPlants();
 }
 
 async function renderPlantsFromDatabase() {
-  if (!window._supabase) {
+  if (!_supabase) {
     console.error("Supabase n'est pas initialisé !");
     return;
   }
@@ -220,14 +223,14 @@ window.onload = () => {
 
             const placedEntity = document.createElement('a-entity');
             placedEntity.setAttribute('glb-model', 'models/AEP/AEP.glb');
-            placedEntity.setAttribute('scale', { x: 1, y: 1, z: 1 });
+            placedEntity.setAttribute('scale', { x: 20, y: 20, z: 20 });
             placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
             placedEntity.setAttribute('id', 'placed-plant');
             placedEntity.setAttribute('gps-new-entity-place', {
                 latitude: e.detail.position.latitude + 0.001,
                 longitude: e.detail.position.longitude
             });
-  document.querySelector("a-scene").appendChild(placedEntity);
+            document.querySelector("a-scene").appendChild(placedEntity);
   });
 
 
