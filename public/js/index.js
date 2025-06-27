@@ -53,20 +53,15 @@ async function renderPlantsFromDatabase() {
 
     entity.setAttribute('glb-model', `models/${plant.id}/${plant.id}.glb`);
     entity.classList.add('rendered-plant-db');
-
+    entity.setAttribute('position', { x: 0, y: 0, z: 0 });
+    entity.setAttribute('scale', { x: 1, y: 1, z: 1 });
+    entity.setAttribute('gps-new-entity-place', {
+      latitude :  plant.latitude,
+      longitude: plant.longitude
+    });
     // D'abord ajouter à la scène
     scene.appendChild(entity);
-
-    // Puis écouter le chargement pour appliquer position/scale
-    entity.addEventListener('model-loaded', () => {
-      //entity.setAttribute('position', '0 0 0');
-      entity.setAttribute('scale', '1 1 1');
-      entity.setAttribute(
-      'gps-new-entity-place',
-      `latitude: ${plant.latitude}; longitude: ${plant.longitude}`
-    );
-      console.log(`Plante ${plant.id} chargée à ${plant.latitude}, ${plant.longitude}`);
-    });
+    console.log(`Plante ${plant.id} chargée à ${plant.latitude}, ${plant.longitude}`);
 });
 }
 
@@ -112,13 +107,12 @@ function loadPlantModel(code) {
   scalepos = "1 1 1" 
   placedEntity = document.createElement('a-entity');
   placedEntity.setAttribute('glb-model', modelPath);
-  placedEntity.setAttribute('scale', scalepos);
-  //placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
-  placedEntity.setAttribute('id', 'placed-plant');
+  placedEntity.setAttribute('position', { x: 0, y: 0, z: 0 });
+  placedEntity.setAttribute('scale', { x: 1, y: 1, z: 1 });
   placedEntity.setAttribute('gps-new-entity-place', {
-                    latitude: userPosition.latitude +0.001,
-                    longitude: userPosition.longitude
-  });
+      latitude :  userPosition.latitude,
+      longitude: userPosition.longitude
+    });
   document.querySelector("a-scene").appendChild(placedEntity);
 
   const thumb = document.getElementById('plantThumb');
@@ -205,21 +199,19 @@ function renderPlants() {
     if (dist < 200) {
       const entity = document.createElement('a-entity');
       entity.setAttribute('glb-model', `models/${plant.id}/${plant.id}.glb`);
-      entity.addEventListener('model-loaded', () => {
-      entity.setAttribute('position', '0 0 0');
-      entity.setAttribute('scale', '1 1 1');
+      entity.setAttribute('position', { x: 0, y: 0, z: 0 });
+      entity.setAttribute('scale', { x: 1, y: 1, z: 1 });
       entity.setAttribute('gps-new-entity-place', {
-        latitude: plant.latitude,
-        longitude: plant.longitude
-      });
+      latitude :  userPosition.latitude,
+      longitude: userPosition.longitude
+    });
       //entity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
       console.log(`Modèle ${plant.id} chargé et positionné.`);
-    });
+    }
 
 
       entity.classList.add('rendered-plant');
       scene.appendChild(entity);
-    }
   });
 }
 
@@ -248,27 +240,14 @@ window.onload = () => {
             });
             document.querySelector("a-scene").appendChild(entity);
             
-
             const placedEntity = document.createElement('a-entity');
-            placedEntity.setAttribute('glb-model', 'models/AEP/AEP.glb');
+            placedEntity.setAttribute('position', { x: 0, y: 0, z: 0 });
             placedEntity.setAttribute('scale', { x: 1, y: 1, z: 1 });
-            //placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
-            //placedEntity.setAttribute('id', 'placed-plant');
             placedEntity.setAttribute('gps-new-entity-place', {
-                latitude: e.detail.position.latitude + 0.001,
-                longitude: e.detail.position.longitude
+              latitude :  userPosition.latitude,
+              longitude: userPosition.longitude
             });
-
-            // Debug events
-            placedEntity.addEventListener('model-loaded', () => {
-              console.log(' Modèle chargé avec succès');
-            });
-
-            placedEntity.addEventListener('model-error', (err) => {
-              console.error(' Erreur de chargement modèle :', err.detail.src);
-            });
-
-
+            placedEntity.setAttribute('glb-model', 'models/AEP/AEP.glb');
             document.querySelector("a-scene").appendChild(placedEntity);
   });
 
