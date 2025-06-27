@@ -1,5 +1,3 @@
-import { createClient } from '@supabase/supabase-js'
-
 let userPosition = null;
 let watchId = null;
 let placedEntity = null;
