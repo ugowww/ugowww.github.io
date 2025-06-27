@@ -238,13 +238,24 @@ window.onload = () => {
 
             const placedEntity = document.createElement('a-entity');
             placedEntity.setAttribute('glb-model', 'models/AEP/AEP.glb');
-            placedEntity.setAttribute('scale', { x: 20, y: 20, z: 20 });
+            placedEntity.setAttribute('scale', { x: 1, y: 1, z: 1 });
             //placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
             //placedEntity.setAttribute('id', 'placed-plant');
             placedEntity.setAttribute('gps-new-entity-place', {
                 latitude: e.detail.position.latitude + 0.001,
                 longitude: e.detail.position.longitude
             });
+
+            // Debug events
+            placedEntity.addEventListener('model-loaded', () => {
+              console.log(' Modèle chargé avec succès');
+            });
+
+            placedEntity.addEventListener('model-error', (err) => {
+              console.error(' Erreur de chargement modèle :', err.detail.src);
+            });
+
+
             document.querySelector("a-scene").appendChild(placedEntity);
   });
 
