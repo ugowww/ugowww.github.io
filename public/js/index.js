@@ -223,12 +223,12 @@ window.onload = () => {
 
   loadFromSupabase()
   //renderPlantsFromDatabase();
-
+  renderedPlants = false;
   const el = document.querySelector("[gps-new-camera]");
   el.addEventListener("gps-camera-update-position", async(e) => {
             //alert(`Got first GPS position: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
             log(`Position GPS initiale: lon ${e.detail.position.longitude} lat ${e.detail.position.latitude}`);
-            renderedPlants = false;
+
             if(renderedPlants === false) {
               renderedPlants = true;
               renderPlantsFromDatabase();
