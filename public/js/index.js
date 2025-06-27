@@ -52,18 +52,20 @@ async function renderPlantsFromDatabase() {
     const entity = document.createElement('a-entity');
 
     entity.setAttribute('glb-model', `models/${plant.id}/${plant.id}.glb`);
-    entity.setAttribute('scale', {
-                x: 1, 
-                y: 1,
-                z: 1
-            });
-    //entity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
-    entity.setAttribute('gps-new-entity-place', `latitude: ${plant.latitude}; longitude: ${plant.longitude}`);
+    entity.addEventListener('model-loaded', () => {
+      entity.setAttribute('position', '0 0 0');
+      entity.setAttribute('scale', '1 1 1');
+      entity.setAttribute('gps-new-entity-place', {
+        latitude: plant.latitude,
+        longitude: plant.longitude
+      });
     entity.classList.add('rendered-plant-db');
 
     scene.appendChild(entity);
   });
+});
 }
+
 
 function startTrackingPosition() {
   if (!navigator.geolocation) {
@@ -106,7 +108,7 @@ function loadPlantModel(code) {
 
   placedEntity = document.createElement('a-entity');
   placedEntity.setAttribute('glb-model', modelPath);
-  placedEntity.setAttribute('scale', { x: 1, y: 1, z: 1 });
+  placedEntity.setAttribute('scale', '1 1 1');
   //placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
   placedEntity.setAttribute('id', 'placed-plant');
   placedEntity.setAttribute('gps-new-entity-place', {
@@ -199,16 +201,18 @@ function renderPlants() {
     if (dist < 200) {
       const entity = document.createElement('a-entity');
       entity.setAttribute('glb-model', `models/${plant.id}/${plant.id}.glb`);
-      entity.setAttribute('scale', {
-                x: 1, 
-                y: 1,
-                z: 1
-            });
-      //entity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
-            entity.setAttribute('gps-new-entity-place', {
+      entity.addEventListener('model-loaded', () => {
+      entity.setAttribute('position', '0 0 0');
+      entity.setAttribute('scale', '1 1 1');
+      entity.setAttribute('gps-new-entity-place', {
         latitude: plant.latitude,
         longitude: plant.longitude
       });
+      //entity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
+      console.log(`Modèle ${plant.id} chargé et positionné.`);
+    });
+
+
       entity.classList.add('rendered-plant');
       scene.appendChild(entity);
     }
