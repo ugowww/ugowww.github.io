@@ -223,7 +223,7 @@ function renderPlants() {
 window.onload = () => {
 
   loadFromSupabase()
-  renderPlantsFromDatabase();
+  //renderPlantsFromDatabase();
   entityadded = false;
   const el = document.querySelector("[gps-new-camera]");
   el.addEventListener("gps-camera-update-position", async(e) => {
@@ -243,16 +243,7 @@ window.onload = () => {
                 longitude: e.detail.position.longitude +0.001
             });
             document.querySelector("a-scene").appendChild(entity);
-            
-            const placedEntity = document.createElement('a-entity');
-            placedEntity.setAttribute('position', { x: 0, y: 0, z: 0 });
-            placedEntity.setAttribute('scale', { x: 1, y: 1, z: 1 });
-            placedEntity.setAttribute('gps-new-entity-place', {
-              latitude :  userPosition.latitude,
-              longitude: userPosition.longitude
-            });
-            placedEntity.setAttribute('gltf-model', 'models/AEP/AEP.glb');
-            document.querySelector("a-scene").appendChild(placedEntity);
+            renderPlantsFromDatabase();
   });
 
 
