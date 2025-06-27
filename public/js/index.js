@@ -103,41 +103,6 @@ function loadjson(){
     });
 }
 
-
-function loadPlantBatch(e) {
-  if (!userPosition) {
-    console.warn("Position utilisateur inconnue, batch non lancé.");
-    return;
-  }
-
-  const scene = document.querySelector("a-scene");
-
-  document.querySelectorAll('.rendered-plant').forEach(e => e.remove());
-
-  storedPlants.forEach(plant => {
-    const dist = haversine(
-      userPosition.latitude,
-      userPosition.longitude,
-      plant.latitude,
-      plant.longitude
-    );
-
-    if (dist < 200) { // Seuil de 200m
-      const entity = document.createElement('a-entity');
-      entity.setAttribute('gltf-model', `models/${plant.id}/${plant.id}.glb`);
-      entity.setAttribute('gps-new-entity-place', {
-        latitude: e.detail.position.latitude + 0.001,
-        longitude: e.detail.position.longitude
-      });
-      entity.setAttribute('scale', '1 1 1');
-      entity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
-      entity.classList.add('rendered-plant');
-      scene.appendChild(entity);
-    }
-  });
-
-  console.log(`Plantes affichées à proximité (${storedPlants.length} au total).`);
-}
 function setPositionPlant(lat, lon) {
   if (!placedEntity) return;
   placedEntity.setAttribute('gps-new-entity-place', { latitude: lat, longitude: lon });
@@ -248,7 +213,18 @@ window.onload = () => {
                 longitude: e.detail.position.longitude +0.001
             });
             document.querySelector("a-scene").appendChild(entity);
-            loadPlantBatch(e.detail.position);
+            
+
+            const placedEntity = document.createElement('a-entity');
+            placedEntity.setAttribute('glb-model', 'models/AEP/AEP.glb');
+            placedEntity.setAttribute('scale', { x: 1, y: 1, z: 1 });
+            placedEntity.setAttribute('gesture-handler', 'minScale: 0.5; maxScale: 5');
+            placedEntity.setAttribute('id', 'placed-plant');
+            placedEntity.setAttribute('gps-new-entity-place', {
+                latitude: e.detail.position.latitude + 0.001,
+                longitude: e.detail.position.longitude
+            });
+  document.querySelector("a-scene").appendChild(placedEntity);
   });
 
 
