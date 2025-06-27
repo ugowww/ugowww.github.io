@@ -66,7 +66,7 @@ async function renderPlantsFromDatabase() {
 
   log(`Plantes chargées depuis Supabase : ${data.length}`);
 
-  const scene = document.querySelector('a-scene').flushToDOM(true);;
+  const scene = document.querySelector('a-scene').flushToDOM(true);
 
   // Supprime les plantes déjà affichées
   document.querySelectorAll('.rendered-plant-db').forEach(e => e.remove());
