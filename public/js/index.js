@@ -1,6 +1,7 @@
 let userPosition = null;
 let watchId = null;
 let placedEntity = null;
+let plant
 let currentPlantCode = null;
 let storedPlants = [];
 const alldRenderedPlantDb = []
@@ -34,29 +35,35 @@ async function loadFromSupabase() {
   }
   storedPlants = Plants;
 }
-
-async function getModelURL(plantId) {
+async function getIconURL(plantId) {
   const { data, error } = await _supabase
     .storage
     .from('plants')
-    .createSignedUrl(`${plantId}/${plantId}.glb`, 6000); // URL valide 6000 secondes
+    .createSignedUrl(`${plantId}/thumb.jpeg`, 6000); // URL valide 6000 secondes
 
   if (error) {
     log("Erreur génération signed URL :", error);
     return null;
   }
-  log(`Modèle ${plantId} accessible à : ${data.signedUrl}`);
+  log(`Icone ${plantId}/${plantId} accessible à : ${data.signedUrl}`);
+  return data.signedUrl;
+}
+
+async function getModelURL(plantId) {
+  const { data, error } = await _supabase
+    .storage
+    .from('plants')
+    .createSignedUrl(`${plantId}/model_00001_.glb`, 6000); // URL valide 6000 secondes
+
+  if (error) {
+    log("Erreur génération signed URL :", error);
+    return null;
+  }
+  log(`Modèle ${plantId}/${plantId} accessible à : ${data.signedUrl}`);
   return data.signedUrl;
 }
 
 async function renderPlantsFromDatabase() {
-  // Si déjà initialisé, update position
-  if (plantsInitialized) {
-    //log("Plantes déjà initialisées, mise à jour des positions uniquement.");
-    //updateModelPositions(userPosition);
-    return;
-  }
-
   if (!_supabase) {
     log("Supabase n'est pas initialisé !");
     return;
@@ -73,39 +80,19 @@ async function renderPlantsFromDatabase() {
 
   log(`Plantes chargées depuis Supabase : ${data.length}`);
 
-  //loadPromises = [];
-
   for (const plant of data) {
     if(plant.latitude === null || plant.longitude === null) continue; // Skip plants without GPS data
-    renderPlant(plant);
-    /* const url = await getModelURL(plant.id);
+    const url = await getModelURL(plant.id);
     if (!url) continue;
 
     const entity = document.createElement('a-entity');
     entity.classList.add('rendered-plant-db');
     entity.setAttribute('scale', '1 1 1');
     entity.setAttribute('gps-new-entity-place', `latitude:${plant.latitude}; longitude:${plant.longitude}`);
-    entity.setAttribute('gltf-model', url); */
-    //entity.dataset.id = plant.id;
-    //entity.dataset.lat = plant.latitude;
-    //entity.dataset.lon = plant.longitude;
-
-/*     const loadedPromise = new Promise(resolve => {
-      entity.addEventListener('model-loaded', () => {
-        log(`Modèle ${plant.id} chargé`);
-        resolve();
-      });
-    });
- */
-    //loadPromises.push(loadedPromise);
+    entity.setAttribute('gltf-model', url);
     document.querySelector('a-scene').appendChild(entity);
     log(`Plante ${plant.id} créée à ${plant.latitude}, ${plant.longitude}`);
   }
-
-/*   await Promise.all(loadPromises);
-  plantsInitialized = true;
-  log("Tous les modèles sont chargés. Mise à jour des positions..."); */
-  //updateModelPositions(userPosition);
 }
 
 
@@ -129,7 +116,7 @@ function startTrackingPosition() {
     {
       enableHighAccuracy: true,
       maximumAge: 1000,
-      timeout: 5000
+      timeout: 0
     }
   );
 }
@@ -144,11 +131,33 @@ function updatePositionDisplay() {
   }
 }
 
-function loadPlantModel(code) {
+async function loadPlantModel(code) {
 
-  modelPath = `models/${code}/${code}.glb`;
+  //Get supabase request
+  const { data, error } = await _supabase
+    .from('Plants')
+    .select('*')
+    .eq('id', code)
+    .single();
+
+  if (error) {
+    log("Erreur récupération plante :", error);
+    return;
+  }
+
+  if (data.isSet) {
+    log(`La plante ${code} a déjà été positionnée.`);
+    return;
+  }
+
+  //Create a signed url for the model and its icon
+  const url = await getModelURL(code);
+  if (!url) return;
+  const iconurl = await getIconURL(code)
+  if(!iconurl) return;
+
   placedEntity = document.createElement('a-entity');
-  placedEntity.setAttribute('gltf-model', modelPath);
+  placedEntity.setAttribute('gltf-model', url);
   placedEntity.setAttribute('position', { x: 1, y: 0, z: 0 });
   placedEntity.setAttribute('scale', { x: 1, y: 1, z: 1 });
   placedEntity.setAttribute('gps-new-entity-place', {
@@ -156,12 +165,20 @@ function loadPlantModel(code) {
     longitude: userPosition.longitude
   });
   document.querySelector("a-scene").appendChild(placedEntity);
+
+  storedPlants.push({
+    id: code, 
+    latitude: userPosition.latitude,
+    longitude: userPosition.longitude,
+    isSet: false
+  });
+
   //document.querySelector('a-scene').flushToDOM(true);
   const thumb = document.getElementById('plantThumb');
-  thumb.src = `models/${code}/thumb.jpg`;
+  thumb.src = iconurl;
   thumb.style.display = 'block';
 
-  log(`Chargement du modèle pour la plante ${code} depuis ${modelPath}`);
+  log(`Chargement du modèle pour la plante ${code} depuis ${url}`);
   currentPlantCode = code;
 }
 
@@ -171,14 +188,14 @@ async function confirmPosition() {
     return;
   }
 
-  const plant = storedPlants.find(p => p.id === plantId);
-  if (!plant) {
-    log(`Plante ${plantId} non trouvée dans storedPlants`);
+  index = storedPlants.findIndex(p => p.id === currentPlantCode)
+  if (index === -1) {
+    log(`Plante ${currentPlantCode} non trouvée dans storedPlants`);
     return;
   }
 
-  if (plant.isSet) {
-    log(`La plante ${plantId} a déjà été positionnée.`);
+  if (storedPlants[index].isSet) {
+    log(`La plante ${currentPlantCode} a déjà été positionnée.`);
     return;
   }
 
@@ -190,7 +207,7 @@ async function confirmPosition() {
       longitude: userPosition.longitude,
       isSet: true
     })
-    .eq('id', plantId);
+    .eq('id', currentPlantCode);
 
   if (error) {
     log("Erreur lors de la mise à jour de la plante :", error);
@@ -198,23 +215,18 @@ async function confirmPosition() {
   }
 
   // Met à jour localement aussi
-  plant.latitude = userPosition.latitude;
-  plant.longitude = userPosition.longitude;
-  plant.isSet = true;
+  storedPlants[index].latitude = userPosition.latitude;
+  storedPlants[index].longitude = userPosition.longitude;
+  storedPlants[index].isSet = true;
 
-  log(`Plante ${plantId} positionnée à ${userPosition.latitude}, ${userPosition.longitude}`);
-
+  log(`Plante ${currentPlantCode} positionnée à ${userPosition.latitude}, ${userPosition.longitude}`);
+  document.getElementById('plantThumb').style.display = 'none';
   // Optionnel : re-render ou update
-  renderPlant(plant);
+  renderPlant(storedPlants[index]);
 }
 
 async function renderPlant(plant){
-  const existingEntity = document.querySelector(`a-entity[data-id="${plant.id}"]`);
-  if (existingEntity) {
-    existingEntity.setAttribute('gps-new-entity-place', `latitude:${plant.latitude}; longitude:${plant.longitude}`);
-  }
-
-    const url = await getModelURL(plant.id, `${plant.id}.glb`);
+    const url = await getModelURL(plant.id);
     if (!url) return;
 
     const entity = document.createElement('a-entity');
@@ -258,6 +270,7 @@ function haversine(lat1, lon1, lat2, lon2) {
 window.onload = () => {
 
   loadFromSupabase()
+  renderPlantsFromDatabase();
   rendered = false;
   const el = document.querySelector("[gps-new-camera]");
   el.addEventListener("gps-camera-update-position", async(e) => {
