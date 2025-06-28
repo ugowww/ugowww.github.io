@@ -95,7 +95,7 @@ async function renderPlantsFromDatabase() {
       });
     });
  */
-    loadPromises.push(loadedPromise);
+    //loadPromises.push(loadedPromise);
     document.querySelector('a-scene').appendChild(entity);
     log(`Plante ${plant.id} créée à ${plant.latitude}, ${plant.longitude}`);
   }
