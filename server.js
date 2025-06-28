@@ -3,8 +3,17 @@ const https = require('https');
 const fs = require('fs');
 const express = require('express');
 const path = require('path');
-
+const dotenv = require('dotenv').config();
 const app = express();
+
+// Vérification des variables d'environnement
+app.get('/config', (req, res) => {
+  res.json({
+    supabaseUrl: process.env.SUPABASE_URL,
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY
+  });
+});
+
 
 const options = {
   key: fs.readFileSync(path.join(__dirname, 'private.key')),
