@@ -85,7 +85,7 @@ async function renderPlantsFromDatabase() {
     const url = await getModelURL(plant.id);
     if (!url) continue;
 
-    const entity = document.createElement('a-entity');
+    const entity = document.createElement('a-entity-camera');
     entity.classList.add('rendered-plant-db');
     entity.setAttribute('scale', '1 1 1');
     entity.setAttribute('gps-new-entity-place', `latitude:${plant.latitude}; longitude:${plant.longitude}`);
@@ -270,7 +270,7 @@ function haversine(lat1, lon1, lat2, lon2) {
 window.onload = () => {
 
   loadFromSupabase()
-  renderPlantsFromDatabase();
+  //renderPlantsFromDatabase();
   rendered = false;
   const el = document.querySelector("[gps-new-camera]");
   el.addEventListener("gps-camera-update-position", async(e) => {
