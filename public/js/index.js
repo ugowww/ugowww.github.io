@@ -270,7 +270,7 @@ function haversine(lat1, lon1, lat2, lon2) {
 window.onload = () => {
 
   loadFromSupabase()
-  //renderPlantsFromDatabase();
+  renderPlantsFromDatabase();
   rendered = false;
   const el = document.querySelector("[gps-new-camera]");
   el.addEventListener("gps-camera-update-position", async(e) => {
