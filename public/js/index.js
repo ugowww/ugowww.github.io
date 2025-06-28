@@ -1,15 +1,15 @@
+require('dotenv').config();
+
 let userPosition = null;
 let watchId = null;
 let placedEntity = null;
 let currentPlantCode = null;
 let storedPlants = []; // JSON local [{ id, latitude, longitude }]
-
+const alldRenderedPlantDb = []
 
 const { createClient } = supabase;
-const SUPABASE_URL = 'https://ksgrrlzmervlrpdjtprg.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzZ3JybHptZXJ2bHJwZGp0cHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3NTIwNzUsImV4cCI6MjA2NjMyODA3NX0._d8aSPBnQzNA08zuRzE4GAHLpu-wm7BcLixnqK9RgZg';
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-
+const _supabase = supabase.createClient(process.env.SUPABASE_URL, process.env.SUPABASE_URLSUPABASE_ANON_KEY)
+//Bonne nuit !
 log('Supabase Instance: ', _supabase)
 
 function log(msg) {
@@ -65,7 +65,8 @@ async function renderPlantsFromDatabase() {
 
   log(`Plantes chargées depuis Supabase : ${data.length}`);
 
-  document.querySelector('a-scene').flushToDOM(true);
+  //document.querySelector('a-scene').flushToDOM(true);
+   
 
   // Supprime les plantes déjà affichées
   document.querySelectorAll('.rendered-plant-db').forEach(e => e.remove());
@@ -83,7 +84,7 @@ async function renderPlantsFromDatabase() {
     entity.setAttribute('data-lat', plant.latitude);
     entity.setAttribute('data-lon', plant.longitude);
     
-    document.querySelector('a-scene').flushToDOM(true);
+    //document.querySelector('a-scene').flushToDOM(true);
     document.querySelector('a-scene').appendChild(entity);
     log(`Plante ${plant.id} chargée à ${plant.latitude}, ${plant.longitude}`);
 });
@@ -99,7 +100,7 @@ function startTrackingPosition() {
   watchId = navigator.geolocation.watchPosition(
     pos => {
       userPosition = {
-        latitude: pos.coords.latitude,
+        latitude: pos.coords.latitude ,
         longitude: pos.coords.longitude
       };
       updatePositionDisplay();
@@ -138,7 +139,7 @@ function loadPlantModel(code) {
       longitude: userPosition.longitude
     });
   document.querySelector("a-scene").appendChild(placedEntity);
-  document.querySelector('a-scene').flushToDOM(true);
+  //document.querySelector('a-scene').flushToDOM(true);
   const thumb = document.getElementById('plantThumb');
   thumb.src = `models/${code}/thumb.jpg`;
   thumb.style.display = 'block';
@@ -204,26 +205,31 @@ function haversine(lat1, lon1, lat2, lon2) {
 }
 
 function updateModelPositions(userPos) {
-  const el = document.querySelector("[gps-new-camera]");
-  el.addEventListener("gps-camera-update-position", e => {
-    document.querySelectorAll('.rendered-plant-db').forEach((entity) => {
-      const lat = parseFloat(entity.dataset.lat);
-      const lon = parseFloat(entity.dataset.lon);
-      log("reviewing entity", entity.dataset.id);
+  const plantEntities = document.querySelectorAll('.rendered-plant-db');
+    // for (const plantEntity of plantEntities){
+     
+    //   console.log(plantEntity?.dataset?.id)
+    //    console.log(plantEntity?.dataset?.lat)
+    //     console.log(plantEntity?.dataset?.lon)
+    // }
+  plantEntities.forEach((entity) => {
+    log("id : ", entity.id);
+    const lat = parseFloat(entity.dataset['lat']);
+    const lon = parseFloat(entity.dataset['lon']);
+    log("reviewing entity", entity);
 
-     log("Entity position:", lat, lon);
-      const dist = haversine(userPos.latitude, userPos.longitude, lat, lon);
-      if (dist < 200) {
-        entity.setAttribute('visible', 'true');
-        entity.setAttribute('gps-new-entity-place', {
-          latitude: lat,
-          longitude: lon
-        });
-        log('Plante ID:', entity.dataset.id, ' UPDATE :', lat, lon);
-      } else {
-        entity.setAttribute('visible', 'false'); // HIDE IF TOO FAR
-      }
-    });
+    log("Entity position:", lat, lon);
+    const dist = haversine(userPos.latitude, userPos.longitude, lat, lon);
+    if (dist < 200) {
+      entity.setAttribute('visible', 'true');
+      entity.setAttribute('gps-new-entity-place', {
+        latitude: lat,
+        longitude: lon
+      });
+      log('Plante ID:', entity.dataset.id, ' UPDATE :', lat, lon);
+    } else {
+      entity.setAttribute('visible', 'false'); // HIDE IF TOO FAR
+    }
   });
 }
 
@@ -245,6 +251,8 @@ window.onload = () => {
   };
 
   document.getElementById('confirmPlacementBtn').onclick = confirmPosition;
-
-  startTrackingPosition();
+  setTimeout(() => {
+     startTrackingPosition();
+   }, 5000);
+ 
 };
