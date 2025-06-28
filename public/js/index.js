@@ -206,19 +206,18 @@ function haversine(lat1, lon1, lat2, lon2) {
 
 function updateModelPositions(userPos) {
   const plantEntities = document.querySelectorAll('.rendered-plant-db');
-    // for (const plantEntity of plantEntities){
-     
-    //   console.log(plantEntity?.dataset?.id)
-    //    console.log(plantEntity?.dataset?.lat)
-    //     console.log(plantEntity?.dataset?.lon)
-    // }
+    for (const plantEntity of plantEntities){
+      console.log(plantEntity?.dataset?.id)
+       console.log(plantEntity?.dataset?.lat)
+        console.log(plantEntity?.dataset?.lon)
+    }
   plantEntities.forEach((entity) => {
-    log("id : ", entity.id);
-    const lat = parseFloat(entity.dataset['lat']);
-    const lon = parseFloat(entity.dataset['lon']);
-    log("reviewing entity", entity);
+    //log("id : ", entity.id);
+    //const lat = parseFloat(entity.dataset['lat']);
+    //const lon = parseFloat(entity.dataset['lon']);
+    //log("reviewing entity", entity);
 
-    log("Entity position:", lat, lon);
+    //log("Entity position:", lat, lon);
     const dist = haversine(userPos.latitude, userPos.longitude, lat, lon);
     if (dist < 200) {
       entity.setAttribute('visible', 'true');
@@ -251,6 +250,7 @@ window.onload = () => {
   };
 
   document.getElementById('confirmPlacementBtn').onclick = confirmPosition;
+  
   setTimeout(() => {
      startTrackingPosition();
    }, 5000);
