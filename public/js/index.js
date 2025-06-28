@@ -35,17 +35,17 @@ async function loadFromSupabase() {
   storedPlants = Plants;
 }
 
-async function getModelURL(folder, filename) {
+async function getModelURL(plantId) {
   const { data, error } = await _supabase
     .storage
     .from('plants')
-    .createSignedUrl(`${folder}/${filename}`, 6000); // URL valide 6000 secondes
+    .createSignedUrl(`${plantId}/${plantId}.glb`, 6000); // URL valide 6000 secondes
 
   if (error) {
     log("Erreur génération signed URL :", error);
     return null;
   }
-  log(`Modèle ${folder}/${filename} accessible à : ${data.signedUrl}`);
+  log(`Modèle ${plantId} accessible à : ${data.signedUrl}`);
   return data.signedUrl;
 }
 
@@ -76,14 +76,16 @@ async function renderPlantsFromDatabase() {
   //loadPromises = [];
 
   for (const plant of data) {
-    const url = await getModelURL(plant.id, `${plant.id}.glb`);
+    if(plant.latitude === null || plant.longitude === null) continue; // Skip plants without GPS data
+    renderPlant(plant);
+    /* const url = await getModelURL(plant.id);
     if (!url) continue;
 
     const entity = document.createElement('a-entity');
     entity.classList.add('rendered-plant-db');
     entity.setAttribute('scale', '1 1 1');
     entity.setAttribute('gps-new-entity-place', `latitude:${plant.latitude}; longitude:${plant.longitude}`);
-    entity.setAttribute('gltf-model', url);
+    entity.setAttribute('gltf-model', url); */
     //entity.dataset.id = plant.id;
     //entity.dataset.lat = plant.latitude;
     //entity.dataset.lon = plant.longitude;
@@ -143,11 +145,11 @@ function updatePositionDisplay() {
 }
 
 function loadPlantModel(code) {
+
   modelPath = `models/${code}/${code}.glb`;
-  scalepos = "1 1 1"
   placedEntity = document.createElement('a-entity');
   placedEntity.setAttribute('gltf-model', modelPath);
-  placedEntity.setAttribute('position', { x: 0, y: 0, z: 0 });
+  placedEntity.setAttribute('position', { x: 1, y: 0, z: 0 });
   placedEntity.setAttribute('scale', { x: 1, y: 1, z: 1 });
   placedEntity.setAttribute('gps-new-entity-place', {
     latitude: userPosition.latitude,
@@ -163,49 +165,63 @@ function loadPlantModel(code) {
   currentPlantCode = code;
 }
 
-function setPositionPlant(lat, lon) {
-  if (!placedEntity) return;
-  placedEntity.setAttribute('gps-new-entity-place', { latitude: lat, longitude: lon });
-}
-
 async function confirmPosition() {
-  if (!userPosition || !currentPlantCode) {
-    //alert("Chargez une plante et attendez la position.");
+  if (!userPosition || !_supabase || !storedPlants) {
+    log("Position utilisateur, Supabase ou données plantes non disponibles");
     return;
   }
 
-  const newPlant = {
-    id: currentPlantCode,
-    latitude: userPosition.latitude,
-    longitude: userPosition.longitude
-  };
+  const plant = storedPlants.find(p => p.id === plantId);
+  if (!plant) {
+    log(`Plante ${plantId} non trouvée dans storedPlants`);
+    return;
+  }
 
-  setPositionPlant(userPosition.latitude, userPosition.longitude);
+  if (plant.isSet) {
+    log(`La plante ${plantId} a déjà été positionnée.`);
+    return;
+  }
 
-  const { data, error } = await _supabase
+  // Met à jour dans Supabase
+  const { error } = await _supabase
     .from('Plants')
-    .upsert([
-      {
-        id: newPlant.id,
-        latitude: newPlant.latitude,
-        longitude: newPlant.longitude
-      }
-    ], {
-      onConflict: 'id'
+    .update({
+      latitude: userPosition.latitude,
+      longitude: userPosition.longitude,
+      isSet: true
     })
-    .select();
+    .eq('id', plantId);
 
   if (error) {
-    log("Erreur lors de l'enregistrement Supabase.");
-    log(error);
+    log("Erreur lors de la mise à jour de la plante :", error);
     return;
   }
 
-  storedPlants.push(newPlant);
+  // Met à jour localement aussi
+  plant.latitude = userPosition.latitude;
+  plant.longitude = userPosition.longitude;
+  plant.isSet = true;
 
+  log(`Plante ${plantId} positionnée à ${userPosition.latitude}, ${userPosition.longitude}`);
 
-  //alert("Plante enregistrée localement.");
-  log("Plante enregistrée :", newPlant.id);
+  // Optionnel : re-render ou update
+  renderPlant(plant);
+}
+
+async function renderPlant(plant){
+  const existingEntity = document.querySelector(`a-entity[data-id="${plant.id}"]`);
+  if (existingEntity) {
+    existingEntity.setAttribute('gps-new-entity-place', `latitude:${plant.latitude}; longitude:${plant.longitude}`);
+  }
+
+    const url = await getModelURL(plant.id, `${plant.id}.glb`);
+    if (!url) return;
+
+    const entity = document.createElement('a-entity');
+    entity.classList.add('rendered-plant-db');
+    entity.setAttribute('scale', '1 1 1');
+    entity.setAttribute('gps-new-entity-place', `latitude:${plant.latitude}; longitude:${plant.longitude}`);
+    entity.setAttribute('gltf-model', url);
 }
 
 function haversine(lat1, lon1, lat2, lon2) {
