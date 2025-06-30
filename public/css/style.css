@@ -67,3 +67,6 @@ button {
   display: none;
   z-index: 999;
 }
+#debug, .debug, .a-loader{
+  display: none !important;
+}
