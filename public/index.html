@@ -22,7 +22,7 @@
 
     <img id="plantThumb" src="" alt="Miniature plante">
     <!--  gps-camera-debug stats-->
-    <a-scene mindar-image="filterMinCF:0.0001; filterBeta: 0.001" embedded arjs='sourceType: webcam; debugUIEnabled: false;' vr-mode-ui="enabled: true">
+    <a-scene fog mindar-image="filterMinCF:0.0001; filterBeta: 0.001" embedded arjs='sourceType: webcam; debugUIEnabled: false;' vr-mode-ui="enabled: false">
       <a-camera gps-new-camera rotation-reader gpsMinDistance="5"></a-camera>
       <a-entity camera></a-entity>
       <div id="debugDisplay" display="none">
