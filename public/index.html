@@ -13,14 +13,14 @@
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <div id="ui-panel">
+    <div id="ui-panel" class="debug">
       <label for="plantCodeInput">Code Plante (3 chiffres) :</label>
       <input type="text" id="plantCodeInput" maxlength="3" />
       <button id="loadPlantBtn">Charger</button>
       <button id="confirmPlacementBtn">Confirmer Placement</button>
     </div>
 
-    <img id="plantThumb" src="" alt="Miniature plante">
+    <img id="plantThumb" src="" alt="Miniature plante" class="debug">
     <!--  gps-camera-debug stats-->
     <a-scene fog mindar-image="filterMinCF:0.0001; filterBeta: 0.001" embedded arjs='sourceType: webcam; debugUIEnabled: false;' vr-mode-ui="enabled: false">
       <a-camera gps-new-camera rotation-reader gpsMinDistance="50" look-controls-enabled="false"></a-camera>
