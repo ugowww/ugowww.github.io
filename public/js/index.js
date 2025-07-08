@@ -153,6 +153,10 @@ window.onload = () => {
     if(!firstcall){
       document.querySelector("a-entity").remove();
     }
+    if (!code){
+      log("Veuillez entrer un code de plante valide (3 chiffres).");
+      return;
+    }
     loadPlantModel(code);
     firstcall = false
   };
