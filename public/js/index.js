@@ -31,14 +31,13 @@ async function loadFromSupabase() {
     return;
   }
   storedPlants = Plants;
+  log(storedPlants);
 
-  iterator = 0;
-  for(plant in storedPlants){
+  for(plant of storedPlants){
     const option = document.createElement('option');
-    option.value = iterator;
-    option.textContent = iterator;
+    option.value = plant.id;
+    option.textContent = plant.id;
     document.getElementById('plantSelect').appendChild(option);
-    iterator++;
   }
   log(`Plantes chargées depuis Supabase : ${storedPlants.length}`);
 }
