@@ -31,6 +31,16 @@ async function loadFromSupabase() {
     return;
   }
   storedPlants = Plants;
+
+  iterator = 0;
+  for(plant in storedPlants){
+    const option = document.createElement('option');
+    option.value = iterator;
+    option.textContent = iterator;
+    document.getElementById('plantSelect').appendChild(option);
+    iterator++;
+  }
+  log(`Plantes chargées depuis Supabase : ${storedPlants.length}`);
 }
 
 async function getIconURL(plantId) {
@@ -128,13 +138,13 @@ async function loadPlantModel(code) {
     longitude: userPosition.longitude
   }); */
   document.querySelector("a-marker").appendChild(placedEntity);
-
+/* 
   storedPlants.push({
     id: code, 
     latitude: 0,
     longitude: 0,
     isSet: false
-  });
+  }); */
 
   //document.querySelector('a-scene').flushToDOM(true);
   const thumb = document.getElementById('plantThumb');
@@ -150,12 +160,6 @@ async function loadPlantModel(code) {
 window.onload = () => {
 
   loadFromSupabase();
-  for(plant in storedPlants){
-    const option = document.createElement('option');
-    option.value = plant.id;
-    option.textContent = plant.id;
-    document.getElementById('plantSelect').appendChild(option);
-  }
 
   firstcall = true;
   document.getElementById('loadPlantBtn').onclick = () => {
