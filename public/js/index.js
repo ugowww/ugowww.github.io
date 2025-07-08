@@ -148,6 +148,15 @@ async function loadPlantModel(code) {
 
 // === INIT ===
 window.onload = () => {
+
+  loadFromSupabase();
+  for(plant in storedPlants){
+    const option = document.createElement('option');
+    option.value = plant.id;
+    option.textContent = plant.id;
+    document.getElementById('plantSelect').appendChild(option);
+  }
+
   firstcall = true;
   document.getElementById('loadPlantBtn').onclick = () => {
     const code = document.getElementById('plantSelect').value.trim().toUpperCase();
