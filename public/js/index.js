@@ -32,6 +32,7 @@ async function loadFromSupabase() {
   }
   storedPlants = Plants;
 }
+
 async function getIconURL(plantId) {
   const { data, error } = await _supabase
     .storage
@@ -158,6 +159,6 @@ window.onload = () => {
       return;
     }
     loadPlantModel(code);
-    firstcall = false
+    firstcall = false;
   };
 };

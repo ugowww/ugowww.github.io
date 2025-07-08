@@ -90,6 +90,7 @@ button {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-height: 100px;
 }
 
 .plant-picker label {
