@@ -149,7 +149,7 @@ async function loadPlantModel(code) {
 window.onload = () => {
   firstcall = true;
   document.getElementById('loadPlantBtn').onclick = () => {
-    const code = document.getElementById('plantCodeInput').value.trim().toUpperCase();
+    const code = document.getElementById('plantSelect').value.trim().toUpperCase();
     if(!firstcall){
       document.querySelector("a-entity").remove();
     }

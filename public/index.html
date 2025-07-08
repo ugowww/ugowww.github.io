@@ -14,11 +14,11 @@
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <div id="ui-panel">
+<!--     <div id="ui-panel">
       <label for="plantCodeInput">Code Plante (3 chiffres) :</label>
       <input type="text" id="plantCodeInput" maxlength="3" />
       <button id="loadPlantBtn">Charger</button>
-    </div>
+    </div> -->
 
     <img id="plantThumb" src="" alt="Miniature plante">
     <!--  gps-camera-debug stats-->
@@ -40,5 +40,34 @@
       <div id="log-panel" class="debug"></div>
       </div>
     </a-scene>
+
+    <div id="bottom-ui">
+  <div class="plant-picker">
+    <label for="plantSelect">Plante :</label>
+    <select id="plantSelect">
+      <option value="1">001</option>
+      <option value="2">002</option>
+      <option value="3">003</option>
+      <option value="4">004</option>
+      <option value="5">005</option>
+      <option value="6">006</option>
+      <option value="7">007</option>
+      <option value="8">008</option>
+      <option value="9">009</option>
+      <option value="10">010</option>
+      <option value="11">011</option>
+      <option value="12">012</option>
+      <option value="13">013</option>
+      <option value="14">014</option>
+      <option value="15">015</option>
+      <option value="16">016</option>
+      <option value="17">017</option>
+      <option value="18">018</option>
+      <option value="19">019</option>
+      <option value="20">020</option>
+    </select>
+    <button id="loadPlantBtn">Go</button>
+  </div>
+</div>
   </body>
 </html>
