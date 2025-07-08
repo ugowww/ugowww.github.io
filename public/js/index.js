@@ -93,44 +93,7 @@ async function renderPlantsFromDatabase() {
   }
 }
 
-
-function startTrackingPosition() {
-  if (!navigator.geolocation) {
-    //alert("Géolocalisation non supportée.");
-    return;
-  }
-
-  watchId = navigator.geolocation.watchPosition(
-    pos => {
-      userPosition = {
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude
-      };
-      updatePositionDisplay();
-    },
-    err => {
-      log("Erreur GPS :", err);
-    },
-    {
-      enableHighAccuracy: true,
-      maximumAge: 1000,
-      timeout: 0
-    }
-  );
-}
-
-function updatePositionDisplay() {
-  const el = document.getElementById('positionDisplay');
-  if (!userPosition) {
-    el.innerText = "GPS: en attente...";
-  } else {
-    el.innerText = `GPS:\nLat: ${userPosition.latitude.toFixed(5)}\nLon: ${userPosition.longitude.toFixed(5)}`;
-    log(`Position actuelle: ${userPosition.latitude}, ${userPosition.longitude}`);
-  }
-}
-
 async function loadPlantModel(code) {
-
   //Get supabase request
   const { data, error } = await _supabase
     .from('Plants')
@@ -143,10 +106,10 @@ async function loadPlantModel(code) {
     return;
   }
 
-  if (data.isSet) {
+/*   if (data.isSet) {
     log(`La plante ${code} a déjà été positionnée.`);
     return;
-  }
+  } */
 
   //Create a signed url for the model and its icon
   const url = await getModelURL(code);
@@ -154,20 +117,21 @@ async function loadPlantModel(code) {
   const iconurl = await getIconURL(code)
   if(!iconurl) return;
 
+  
   placedEntity = document.createElement('a-entity');
   placedEntity.setAttribute('gltf-model', url);
-  placedEntity.setAttribute('position', { x: 1, y: 0, z: 0 });
+  placedEntity.setAttribute('position', { x: 0, y: 0, z: 0 });
   placedEntity.setAttribute('scale', { x: 1, y: 1, z: 1 });
-  placedEntity.setAttribute('gps-new-entity-place', {
+/*   placedEntity.setAttribute('gps-new-entity-place', {
     latitude: userPosition.latitude,
     longitude: userPosition.longitude
-  });
-  document.querySelector("a-scene").appendChild(placedEntity);
+  }); */
+  document.querySelector("a-marker").appendChild(placedEntity);
 
   storedPlants.push({
     id: code, 
-    latitude: userPosition.latitude,
-    longitude: userPosition.longitude,
+    latitude: 0,
+    longitude: 0,
     isSet: false
   });
 
@@ -180,115 +144,16 @@ async function loadPlantModel(code) {
   currentPlantCode = code;
 }
 
-async function confirmPosition() {
-  if (!userPosition || !_supabase || !storedPlants) {
-    log("Position utilisateur, Supabase ou données plantes non disponibles");
-    return;
-  }
-
-  index = storedPlants.findIndex(p => p.id === currentPlantCode)
-  if (index === -1) {
-    log(`Plante ${currentPlantCode} non trouvée dans storedPlants`);
-    return;
-  }
-
-  if (storedPlants[index].isSet) {
-    log(`La plante ${currentPlantCode} a déjà été positionnée.`);
-    return;
-  }
-
-  // Met à jour dans Supabase
-  const { error } = await _supabase
-    .from('Plants')
-    .update({
-      latitude: userPosition.latitude,
-      longitude: userPosition.longitude,
-      isSet: true
-    })
-    .eq('id', currentPlantCode);
-
-  if (error) {
-    log("Erreur lors de la mise à jour de la plante :", error);
-    return;
-  }
-
-  // Met à jour localement aussi
-  storedPlants[index].latitude = userPosition.latitude;
-  storedPlants[index].longitude = userPosition.longitude;
-  storedPlants[index].isSet = true;
-
-  log(`Plante ${currentPlantCode} positionnée à ${userPosition.latitude}, ${userPosition.longitude}`);
-  document.getElementById('plantThumb').style.display = 'none';
-  // Optionnel : re-render ou update
-  renderPlant(storedPlants[index]);
-}
-
-async function renderPlant(plant){
-    const url = await getModelURL(plant.id);
-    if (!url) return;
-
-    const entity = document.createElement('a-entity');
-    entity.classList.add('rendered-plant-db');
-    entity.setAttribute('scale', '1 1 1');
-    entity.setAttribute('gps-new-entity-place', `latitude:${plant.latitude}; longitude:${plant.longitude}`);
-    entity.setAttribute('gltf-model', url);
-}
-
-function haversine(lat1, lon1, lat2, lon2) {
-  const R = 6371e3; // m
-  const toRad = x => x * Math.PI / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-    Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-/* function updateModelPositions(userPos) {
-  const plantEntities = document.querySelectorAll('.rendered-plant-db');
-  for (const plantEntity of plantEntities) {
-    log(plantEntity?.dataset?.id)
-    log(plantEntity?.dataset?.lat)
-    log(plantEntity?.dataset?.lon)
-    const dist = haversine(userPos.latitude, userPos.longitude, plantEntity?.dataset?.lat, plantEntity?.dataset?.lon);
-    plantEntity.setAttribute('gps-new-entity-place', {
-        latitude: plantEntity?.dataset?.lat,
-        longitude: plantEntity?.dataset?.lon
-      });
-    if (dist < 200) {
-      plantEntity.setAttribute('visible', 'true'); // SHOW IF CLOSE ENOUGH
-    } else {
-      plantEntity.setAttribute('visible', 'false'); // HIDE IF TOO FAR
-    }
-  }
-} */
 
 // === INIT ===
 window.onload = () => {
-
-  loadFromSupabase()
-  renderPlantsFromDatabase();
-  rendered = false;
-  const el = document.querySelector("[gps-new-camera]");
-  el.addEventListener("gps-camera-update-position", async(e) => {
-    userPosition = {
-      latitude: e.detail.position.latitude,
-      longitude: e.detail.position.longitude
-    };
-    if(!rendered){
-      renderPlantsFromDatabase();
-      rendered = true;
-    }
-    
-  });
-
-
+  firstcall = true;
   document.getElementById('loadPlantBtn').onclick = () => {
     const code = document.getElementById('plantCodeInput').value.trim().toUpperCase();
+    if(!firstcall){
+      document.querySelector("a-entity").remove();
+    }
     loadPlantModel(code);
+    firstcall = false
   };
-
-  document.getElementById('confirmPlacementBtn').onclick = confirmPosition;
-  startTrackingPosition();
 };
